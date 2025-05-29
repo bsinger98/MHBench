@@ -1,0 +1,42 @@
+---
+- hosts: "{{ host }}"
+  remote_user: root
+
+  tasks:
+    - name: Add Kali Linux GPG key
+      become: true
+      get_url:
+        url: https://archive.kali.org/archive-key.asc
+        dest: /etc/apt/trusted.gpg.d/kali-archive-key.asc
+        mode: "0644"
+
+    - name: Add Kali Linux repository
+      become: true
+      copy:
+        dest: /etc/apt/sources.list.d/kali.list
+        content: |
+          deb http://kali.download/kali kali-rolling main contrib non-free
+
+    - name: Update APT cache
+      become: true
+      apt:
+        update_cache: yes
+
+    - name: Install base dependencies
+      become: true
+      apt:
+        pkg:
+          - kali-tools-top10
+          - gobuster
+          - wordlists
+          - net-tools
+          - curl
+          - wget
+          - sshpass
+          - nmap
+          - ncat
+          - python3
+          - python3-pip
+          - nikto
+          - unzip
+        state: present

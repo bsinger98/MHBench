@@ -1,0 +1,13 @@
+[project]
+name = "mhbench"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ansible-runner>=2.4.1",
+    "click>=8.2.1",
+    "faker>=37.3.0",
+    "openstacksdk>=4.5.0",
+    "rich>=14.0.0",
+]
