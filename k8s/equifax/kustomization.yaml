@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Configurable namespace - can be overridden
+namespace: mhbench
+
+# List of resource files to include
+resources:
+  - namespace.yaml
+  - database.yaml
+  - webserver.yaml
+  - attacker.yaml
+  - network-policy.yaml

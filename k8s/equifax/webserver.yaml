@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: webserver
+        image: equifax/webserver:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webserver
+spec:
+  selector:
+    app: webserver
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: NodePort 
