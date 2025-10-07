@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 class ElasticSearchConfig(BaseModel):
@@ -7,12 +6,8 @@ class ElasticSearchConfig(BaseModel):
     port: int
 
 
-class CalderaConfig(BaseModel):
-    api_key: str
-    port: int
-    external: bool = True
-    python_path: str = ""
-    caldera_path: str = ""
+class IncalmoConfig(BaseModel):
+    path: str  # Path to the Incalmo project directory
 
 
 class OpenstackConfig(BaseModel):
@@ -20,16 +15,9 @@ class OpenstackConfig(BaseModel):
     ssh_key_path: str
 
 
-class LLMAPIKeys(BaseModel):
-    open_ai: str = ""
-    anthropic: str = ""
-    google: str = ""
-
-
 class Config(BaseModel):
     elastic_config: ElasticSearchConfig
-    caldera_config: CalderaConfig
+    incalmo_config: IncalmoConfig
     openstack_config: OpenstackConfig
     external_ip: str
     experiment_timeout_minutes: int
-    llm_api_keys: Optional[LLMAPIKeys]

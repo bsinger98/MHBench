@@ -4,8 +4,8 @@ import openstack
 from datetime import datetime
 import os
 
-from environment.environment import Environment
-from ansible.AnsibleRunner import AnsibleRunner
+from src.environment import Environment
+from ansible.ansible_runner import AnsibleRunner
 
 env_module = importlib.import_module("environment")
 
