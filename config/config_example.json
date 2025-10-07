@@ -14,11 +14,6 @@
     "ssh_key_name": "perry_key",
     "ssh_key_path": "~/perry_key.pem"
   },
-  "llm_api_keys": {
-    "open_ai": "SECRET_KEY",
-    "anthropic": "SECRET_KEY",
-    "google": "SECRET_KEY"
-  },
   "external_ip": "10.20.20.1",
   "experiment_timeout_minutes": 75
 }
