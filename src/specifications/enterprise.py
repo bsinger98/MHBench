@@ -1,25 +1,21 @@
 import time
 from utility.logging import log_event
 
-from ansible.AnsibleRunner import AnsibleRunner
-from ansible.AnsiblePlaybook import AnsiblePlaybook
+from ansible.ansible_runner import AnsibleRunner
 
 from ansible.deployment_instance import (
-    InstallBasePackages,
     CheckIfHostUp,
     SetupServerSSHKeys,
-    CreateSSHKey,
 )
 from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupStrutsVulnerability
 from ansible.goals import AddData
-from ansible.defender import InstallSysFlow
 
-from environment.environment import Environment
-from environment.network import Network, Subnet
-from environment.openstack.openstack_processor import get_hosts_on_subnet
+from src.environment import Environment
+from src.legacy_models import Network, Subnet
+from src.utility.openstack_processor import get_hosts_on_subnet
 
-import config.Config as config
+from config.config import Config
 
 from faker import Faker
 import random
@@ -33,7 +29,7 @@ class Enterprise(Environment):
         ansible_runner: AnsibleRunner,
         openstack_conn,
         caldera_ip,
-        config: config.Config,
+        config: Config,
         topology="enterprise",
         number_of_hosts=20,
     ):
@@ -93,16 +89,6 @@ class Enterprise(Environment):
 
         self.ansible_runner.run_playbook(CheckIfHostUp(self.branch_one[0].ip))
         time.sleep(3)
-
-        # Install all base packages
-        self.ansible_runner.run_playbook(
-            InstallBasePackages(self.network.get_all_host_ips())
-        )
-
-        # Install sysflow on all hosts
-        self.ansible_runner.run_playbook(
-            InstallSysFlow(self.network.get_all_host_ips(), self.config)
-        )
 
         # Setup apache struts and vulnerability
         webserver_ips = [host.ip for host in self.branch_one]

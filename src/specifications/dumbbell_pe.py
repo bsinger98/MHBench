@@ -1,30 +1,25 @@
 import time
 from utility.logging import log_event
 
-from ansible.AnsibleRunner import AnsibleRunner
+from ansible.ansible_runner import AnsibleRunner
 
 from ansible.deployment_instance import (
-    InstallBasePackages,
     CheckIfHostUp,
     SetupServerSSHKeys,
     CreateSSHKey,
-    InstallKaliPackages,
 )
 from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupStrutsVulnerability
 from ansible.vulnerabilities import SetupSudoBaron, SetupWriteablePasswd
 from ansible.goals import AddData
-from ansible.caldera import InstallAttacker
-from ansible.defender import InstallSysFlow
 
-from environment.environment import Environment
-from environment.network import Network, Subnet
-from environment.openstack.openstack_processor import get_hosts_on_subnet
+from src.environment import Environment
+from src.legacy_models import Network, Subnet
+from src.utility.openstack_processor import get_hosts_on_subnet
 
-import config.Config as config
+from config.config import Config
 
 from faker import Faker
-import random
 
 fake = Faker()
 
@@ -35,7 +30,7 @@ class DumbbellPE(Environment):
         ansible_runner: AnsibleRunner,
         openstack_conn,
         caldera_ip,
-        config: config.Config,
+        config: Config,
         topology="dumbbell",
         number_of_hosts=30,
     ):
@@ -84,17 +79,6 @@ class DumbbellPE(Environment):
 
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
-
-        # Install all base packages
-        self.ansible_runner.run_playbook(
-            InstallBasePackages(self.network.get_all_host_ips())
-        )
-        self.ansible_runner.run_playbook(InstallKaliPackages(self.attacker_host.ip))
-
-        # Install sysflow on all hosts
-        self.ansible_runner.run_playbook(
-            InstallSysFlow(self.network.get_all_host_ips(), self.config)
-        )
 
         # Setup users on corporte hosts
         for host in self.network.get_all_hosts():

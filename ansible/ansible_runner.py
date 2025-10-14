@@ -8,7 +8,7 @@ from .ansible_playbook import AnsiblePlaybook
 from contextlib import redirect_stdout
 from os import path
 
-from utility.logging import get_logger
+from src.utility.logging import get_logger
 
 logger = get_logger()
 

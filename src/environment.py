@@ -2,38 +2,38 @@ import time
 
 import openstack.compute.v2.server
 import openstack.image.v2.image
-from environment.terraform_helpers import deploy_network
-from utility.openstack_helper_functions import teardown_helper
+from src.terraform_helpers import deploy_network
+from src.utility.openstack_helper_functions import teardown_helper
 import openstack
 from openstack.connection import Connection
-from ansible.AnsibleRunner import AnsibleRunner
-import config.Config as Config
-from environment.network import Host
+from ansible.ansible_runner import AnsibleRunner
+from config.config import Config
+from src.legacy_models.network import Host, Network
+from ansible.deployment_instance import (
+    InstallKaliPackages,
+    CheckIfHostUp,
+    InstallBasePackages,
+    CreateSSHKey,
+)
 from ansible.caldera import InstallAttacker
+from ansible.defender import InstallSysFlow
+from ansible.defender.falco.install_falco import InstallFalco
 
 from utility.logging import get_logger
 
 logger = get_logger()
 
-NUM_PERMANENT_SUBNETS = 1
-NUM_PERMANENT_NETS = 2
-NUM_PERMANENT_SECURITY_GROUPS = 1
 
-
-def find_manage_server(conn, external_ip):
-    """Finds management server that can be used to talk to other servers
-    Assumes only one server has floating ip and it is the management server"""
-
-    # Remove last octet from external ip
-    external_ip = ".".join(external_ip.split(".")[:3])
-
+def find_manage_server(
+    conn,
+) -> tuple[openstack.compute.v2.server.Server | None, str | None]:
+    """Finds any server with a floating IP and returns the first one found."""
     for server in conn.compute.servers():
         for network, network_attrs in server.addresses.items():
-            ip_addresses = [x["addr"] for x in network_attrs]
-            for ip in ip_addresses:
-                # Remove last octet from ip
-                ip_subnet = ".".join(ip.split(".")[:3])
-                if external_ip == ip_subnet:
+            for addr_info in network_attrs:
+                # Check if this address is a floating IP
+                if addr_info.get("OS-EXT-IPS:type") == "floating":
+                    ip = addr_info["addr"]
                     return server, ip
     return None, None
 
@@ -42,9 +42,9 @@ class Environment:
     def __init__(
         self,
         ansible_runner: AnsibleRunner,
-        openstack_conn,
-        external_ip,
-        config: Config.Config,
+        openstack_conn: Connection,
+        external_ip: str,
+        config: Config,
     ):
         self.ansible_runner: AnsibleRunner = ansible_runner
         self.openstack_conn: Connection = openstack_conn
@@ -52,8 +52,9 @@ class Environment:
         self.caldera_ip = external_ip
         self.config = config
         self.all_instances = None
-        self.topology = None
+        self.topology: str
         self.attacker_host: Host
+        self.network: Network
 
         self.hosts = {}
 
@@ -68,17 +69,18 @@ class Environment:
         install_trials = 3
         errors = 0
 
-        for i in range(install_trials):
+        for _ in range(install_trials):
             try:
                 attacker_host = self.attacker_host
                 self.ansible_runner.run_playbook(
                     InstallAttacker(attacker_host.ip, "root", self.caldera_ip)
                 )
                 break
-            except Exception as e:
-                # Restore attacker host
+            except Exception:
                 errors += 1
-                hosts: openstack.compute.v2.server.Server = self.openstack_conn.list_servers()  # type: ignore
+                hosts: openstack.compute.v2.server.Server = (
+                    self.openstack_conn.list_servers()
+                )  # type: ignore
                 for host in hosts:
                     if "attacker" in host.name:
                         self.load_snapshot(host, wait=True)
@@ -113,7 +115,7 @@ class Environment:
         teardown_helper.delete_networks(conn)
         teardown_helper.delete_security_groups(conn)
 
-    def compile(self, setup_network=True, setup_hosts=True):
+    def compile(self, setup_network: bool = True, setup_hosts: bool = True):
         if setup_network:
             # Redeploy entire network
             self.deploy_topology()
@@ -124,11 +126,30 @@ class Environment:
 
         if setup_hosts:
             # Setup instances
+            self.setup_base_packages()
             self.compile_setup()
 
         # Save instance
         self.clean_snapshots()
         self.save_all_snapshots()
+
+    def setup_base_packages(self):
+        self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
+        time.sleep(3)
+
+        self.ansible_runner.run_playbook(
+            InstallBasePackages(self.network.get_all_host_ips())
+        )
+        self.ansible_runner.run_playbook(InstallKaliPackages(self.attacker_host.ip))
+        self.ansible_runner.run_playbook(CreateSSHKey(self.attacker_host.ip, "root"))
+
+        # Install sysflow on all hosts
+        self.ansible_runner.run_playbook(
+            InstallSysFlow(self.network.get_all_host_ips(), self.config)
+        )
+        self.ansible_runner.run_playbook(
+            InstallFalco(self.network.get_all_host_ips(), self.config)
+        )
 
     def setup(self):
         self.find_management_server()
@@ -143,9 +164,7 @@ class Environment:
         deploy_network(self.topology)
 
     def find_management_server(self):
-        manage_server, manage_ip = find_manage_server(
-            self.openstack_conn, self.caldera_ip
-        )
+        manage_network, manage_ip = find_manage_server(self.openstack_conn)
         logger.debug(f"Found management server: {manage_ip}")
         self.ansible_runner.update_management_ip(manage_ip)
 
@@ -203,19 +222,37 @@ class Environment:
         hosts: openstack.compute.v2.server.Server = self.openstack_conn.list_servers()  # type: ignore
 
         # Check if all images exist
+        hosts_to_rebuild = []
         for host in hosts:
             image = self.openstack_conn.get_image(host.name + "_image")
             if not image:
-                raise Exception(f"Image {host.name + '_image'} does not exist")
+                # Skip hosts that don't have snapshots (like dynamically created decoys)
+                # These are typically decoys created during previous experiments
+                if host.name.startswith("decoy"):
+                    logger.warning(
+                        f"Skipping decoy host {host.name} - no snapshot image exists, will delete"
+                    )
+                    # Delete the decoy host since it doesn't have a proper snapshot
+                    try:
+                        self.openstack_conn.delete_server(host.id, wait=True)
+                        logger.info(f"Deleted orphaned decoy host {host.name}")
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to delete orphaned decoy host {host.name}: {e}"
+                        )
+                    continue
+                else:
+                    raise Exception(f"Image {host.name + '_image'} does not exist")
+            hosts_to_rebuild.append(host)
 
         rebuild_num = 10
         # Rebuild 10 servers at a time
-        for i in range(0, len(hosts), rebuild_num):
+        for i in range(0, len(hosts_to_rebuild), rebuild_num):
             hosts_to_restore = []
-            if i + 5 < len(hosts):
-                hosts_to_restore = hosts[i : i + rebuild_num]
+            if i + 5 < len(hosts_to_rebuild):
+                hosts_to_restore = hosts_to_rebuild[i : i + rebuild_num]
             else:
-                hosts_to_restore = hosts[i:]
+                hosts_to_restore = hosts_to_rebuild[i:]
 
             # Start rebuilding all servers
             for host in hosts_to_restore:

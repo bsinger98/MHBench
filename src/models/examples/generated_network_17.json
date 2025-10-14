@@ -1,0 +1,2635 @@
+{
+  "name": "demo_network_17_topology",
+  "networks": [
+    {
+      "name": "demo_network_17",
+      "description": "Generated network with 3 subnets",
+      "subnets": [
+        {
+          "id": "ac9ecd2c-673e-437e-8ab2-4c17cb807950",
+          "name": "subnet_0",
+          "cidr": "192.168.200.0/24",
+          "dns_servers": [
+            "8.8.8.8"
+          ],
+          "hosts": [
+            {
+              "id": "a5033d82-98bb-494c-a061-03c4fe3a65e7",
+              "name": "host_0_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.10",
+              "users": [
+                {
+                  "id": "d3f493ed-0d99-4d31-931a-cbd8d235fe40",
+                  "username": "user_0",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_0"
+                },
+                {
+                  "id": "e443be9a-c357-4c9f-9e6c-49efbb364b7d",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.10",
+                  "from_user": "root",
+                  "to_user": "user_0"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "b9be6be6-3b17-44a2-bc11-0ae3d38ffde3",
+              "name": "host_1_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.11",
+              "users": [
+                {
+                  "id": "46c828d1-a756-43dd-9fe5-2e74242c6a23",
+                  "username": "user_1",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_1"
+                },
+                {
+                  "id": "963d8b3f-45f1-4eb0-bc09-8f1bbbd07e65",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.11",
+                  "from_user": "root",
+                  "to_user": "user_1"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+              "name": "host_2_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.12",
+              "users": [
+                {
+                  "id": "d8ceac23-d77a-47bb-b814-92668a8e0e86",
+                  "username": "user_2",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_2"
+                },
+                {
+                  "id": "2e0f0557-1de7-45f6-85ed-0dbb559b2ff8",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.12",
+                  "from_user": "root",
+                  "to_user": "user_2"
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.12",
+                  "from_user": "root",
+                  "to_user": "user_2"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "b5d7348d-018a-43fa-b3f5-8bf07bfafb97",
+              "name": "host_3_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.13",
+              "users": [
+                {
+                  "id": "5e829b97-8c1d-4cad-92c8-b0fb457722bb",
+                  "username": "user_3",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_3"
+                },
+                {
+                  "id": "a0d0f40b-cb18-458f-89b4-5575a46b211e",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "5257c242-464a-4142-aa63-60322421bd0d",
+              "name": "host_4_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.14",
+              "users": [
+                {
+                  "id": "ad3a9978-8250-42f3-b591-abccdb695064",
+                  "username": "user_4",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_4"
+                },
+                {
+                  "id": "a9907efa-8590-44c5-a421-0548fbff9911",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.14",
+                  "from_user": "root",
+                  "to_user": "root"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "bcf0442c-8e01-4db6-8d00-705a1eb24d24",
+              "name": "host_5_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.15",
+              "users": [
+                {
+                  "id": "56290129-cfd4-4de0-8e17-a27f9491bde1",
+                  "username": "user_5",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_5"
+                },
+                {
+                  "id": "cfd19bad-8032-4d39-a991-eafac29bd238",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+              "name": "host_6_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.16",
+              "users": [
+                {
+                  "id": "bd3247d6-18cc-49d1-a520-9bde7724e527",
+                  "username": "user_6",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_6"
+                },
+                {
+                  "id": "d6ccd4cf-c67f-48d4-b94a-20da1f39293a",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.16",
+                  "from_user": "root",
+                  "to_user": "user_6"
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.16",
+                  "from_user": "root",
+                  "to_user": "user_6"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "2d215651-d4b1-46fe-b7e2-0ab1681ecd2b",
+              "name": "host_7_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.17",
+              "users": [
+                {
+                  "id": "d2683da7-b3ba-45d0-a58d-6c70780b220d",
+                  "username": "user_7",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_7"
+                },
+                {
+                  "id": "cc37ba40-41e9-49ba-9dd8-ab9b93b9251b",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "4f9b549e-cf96-488c-b58a-afd378698912",
+              "name": "host_8_subnet_0",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.200.18",
+              "users": [
+                {
+                  "id": "edd642fb-7e85-414e-8d67-ca52e2702efc",
+                  "username": "user_8",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_8"
+                },
+                {
+                  "id": "0c2e75ca-e329-42f8-a790-e098842a27da",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "None",
+                  "to_host_ip": "192.168.200.18",
+                  "from_user": "root",
+                  "to_user": "root"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            }
+          ],
+          "gateway_ip": null,
+          "external": true,
+          "sg_name": "subnet_0_sg"
+        },
+        {
+          "id": "95454476-44f2-423b-9069-ed0549a4bbc9",
+          "name": "subnet_1",
+          "cidr": "192.168.201.0/24",
+          "dns_servers": [
+            "8.8.8.8"
+          ],
+          "hosts": [
+            {
+              "id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+              "name": "host_0_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.10",
+              "users": [
+                {
+                  "id": "355f8715-0448-4ee1-9cd7-cdacbb167dec",
+                  "username": "user_0",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_0"
+                },
+                {
+                  "id": "ce3567d5-7275-4b36-b074-0933d2a1a985",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.201.23",
+                  "to_host_ip": "192.168.201.10",
+                  "from_user": "user_13",
+                  "to_user": "user_0"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.201.10",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "e9356793-db4e-48a1-8c45-04508b71a8c8",
+              "name": "host_1_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.11",
+              "users": [
+                {
+                  "id": "6bcc16f0-f7ee-44ec-9363-f403e8e39cdc",
+                  "username": "user_1",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_1"
+                },
+                {
+                  "id": "ee4e1c57-a87e-42e5-9c15-36952c6004d9",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.201.15",
+                  "to_host_ip": "192.168.201.11",
+                  "from_user": "user_5",
+                  "to_user": "user_1"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "f1fd58a6-e5b9-4281-8eac-2dbae084c5c1",
+              "name": "host_2_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.12",
+              "users": [
+                {
+                  "id": "42ce1521-8456-405a-b708-37a7405d1bb8",
+                  "username": "user_2",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_2"
+                },
+                {
+                  "id": "5b16e3e5-2004-45b5-90f5-ff7c178047b3",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "6e7b108e-9635-4dee-8d27-8f0505b743b3",
+              "name": "host_3_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.13",
+              "users": [
+                {
+                  "id": "cb3d1a99-34ea-4eb2-8735-379e3693ec32",
+                  "username": "user_3",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_3"
+                },
+                {
+                  "id": "6ed3d82a-a901-49d7-8575-86f3402785da",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "1179a750-bdd3-4351-8b2e-3c3e45274953",
+              "name": "host_4_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.14",
+              "users": [
+                {
+                  "id": "754b6d44-7822-4f22-9f0e-e2821c6a5234",
+                  "username": "user_4",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_4"
+                },
+                {
+                  "id": "6ca6eb4f-44cd-4870-bf05-ae47c70599d3",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "522b134f-b387-4074-a420-16bcfe592211",
+              "name": "host_5_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.15",
+              "users": [
+                {
+                  "id": "a2171d04-0e60-4d43-9763-55537fdd3d67",
+                  "username": "user_5",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_5"
+                },
+                {
+                  "id": "190c1c63-57e4-43cb-a602-262df0d14312",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.16",
+                  "to_host_ip": "192.168.201.15",
+                  "from_user": "user_6",
+                  "to_user": "user_5"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "4d39bb44-579e-4c55-8230-98489d647c8e",
+              "name": "host_6_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.16",
+              "users": [
+                {
+                  "id": "696eccd8-7119-4217-a9d6-cebcbcc28ca2",
+                  "username": "user_6",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_6"
+                },
+                {
+                  "id": "5dbe2b2e-4ca5-40fe-ac08-a2226d5a215c",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "58d81fb7-ac98-4212-bf98-4bf4b865d8ac",
+              "name": "host_7_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.17",
+              "users": [
+                {
+                  "id": "458110f0-0210-49fa-851e-b22ab03a98a4",
+                  "username": "user_7",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_7"
+                },
+                {
+                  "id": "7e871cec-5750-4b32-9adf-979be625b136",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "956086ae-eaba-4679-9d8f-cef297588995",
+              "name": "host_8_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.18",
+              "users": [
+                {
+                  "id": "c099a9c5-c1a4-456a-96ab-3c852525daa5",
+                  "username": "user_8",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_8"
+                },
+                {
+                  "id": "54845967-e6e1-453c-9ba9-ba5e275ebb4d",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "5cbb2330-2550-4651-b17c-e631d9ff2ab4",
+              "name": "host_9_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.19",
+              "users": [
+                {
+                  "id": "34681971-2058-460a-9de4-728e507a1879",
+                  "username": "user_9",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_9"
+                },
+                {
+                  "id": "4882bcea-eef8-4daf-ab5e-d5a1998b1278",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "a74ef9f1-46f0-4dfe-98b1-15dd88ef46ae",
+              "name": "host_10_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.20",
+              "users": [
+                {
+                  "id": "a2805e7c-299d-4df4-a1ad-14d784346dce",
+                  "username": "user_10",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_10"
+                },
+                {
+                  "id": "cf054ba6-7a56-4333-b462-7699ebc91dc7",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "0910f486-abdf-4feb-930c-2397ac3e767c",
+              "name": "host_11_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.21",
+              "users": [
+                {
+                  "id": "9c9943ca-cdc7-49a1-8304-abfdc22d5915",
+                  "username": "user_11",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_11"
+                },
+                {
+                  "id": "469e2328-bda7-4413-9b9c-2a3c13018539",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "f6224f51-a1be-47dd-82d8-5f5398d45abd",
+              "name": "host_12_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.22",
+              "users": [
+                {
+                  "id": "f3e302d5-9521-425b-861b-a3fc49f5c9ec",
+                  "username": "user_12",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_12"
+                },
+                {
+                  "id": "83da1366-c453-4102-b9c9-9466c5f94975",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "8e378322-18c8-494d-85ef-09225947a3ab",
+              "name": "host_13_subnet_1",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.201.23",
+              "users": [
+                {
+                  "id": "a3f61a3a-5a1e-4016-9f44-c3766f8e3ee1",
+                  "username": "user_13",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_13"
+                },
+                {
+                  "id": "c862bffd-b35b-4dac-965d-e4e5556df710",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.12",
+                  "to_host_ip": "192.168.201.23",
+                  "from_user": "user_2",
+                  "to_user": "user_13"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            }
+          ],
+          "gateway_ip": null,
+          "external": false,
+          "sg_name": "subnet_1_sg"
+        },
+        {
+          "id": "905466bd-0306-496d-b18d-324b3d50d7ec",
+          "name": "subnet_2",
+          "cidr": "192.168.202.0/24",
+          "dns_servers": [
+            "8.8.8.8"
+          ],
+          "hosts": [
+            {
+              "id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+              "name": "host_0_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.10",
+              "users": [
+                {
+                  "id": "c87ef066-c348-4c41-8d30-d839b6f004ec",
+                  "username": "user_0",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_0"
+                },
+                {
+                  "id": "c294c028-8b09-4f6f-b779-9fab2e881c8f",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.202.14",
+                  "to_host_ip": "192.168.202.10",
+                  "from_user": "user_4",
+                  "to_user": "user_0"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.10",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+              "name": "host_1_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.11",
+              "users": [
+                {
+                  "id": "74f6e3f6-31d8-4c4e-af56-74a2c5646c01",
+                  "username": "user_1",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_1"
+                },
+                {
+                  "id": "df4d6e0e-2bad-4023-8e0b-fb4d3ebe7b39",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.202.13",
+                  "to_host_ip": "192.168.202.11",
+                  "from_user": "user_3",
+                  "to_user": "user_1"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.11",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+              "name": "host_2_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.12",
+              "users": [
+                {
+                  "id": "1177d977-8b88-436b-9253-44f7aa0724d4",
+                  "username": "user_2",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_2"
+                },
+                {
+                  "id": "6c17a778-5b95-4c4e-a18f-42cebe4940b0",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.202.16",
+                  "to_host_ip": "192.168.202.12",
+                  "from_user": "user_6",
+                  "to_user": "user_2"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.12",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+              "name": "host_3_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.13",
+              "users": [
+                {
+                  "id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+                  "username": "user_3",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_3"
+                },
+                {
+                  "id": "090ac0af-4ff2-4de7-ad6c-a6541b42b570",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.11",
+                  "to_host_ip": "192.168.202.13",
+                  "from_user": "user_1",
+                  "to_user": "user_3"
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.202.16",
+                  "to_host_ip": "192.168.202.13",
+                  "from_user": "user_6",
+                  "to_user": "user_3"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.13",
+                  "from_user": "",
+                  "to_user": ""
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.18",
+                  "to_host_ip": "192.168.202.13",
+                  "from_user": "root",
+                  "to_user": "user_3"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+              "name": "host_4_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.14",
+              "users": [
+                {
+                  "id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe",
+                  "username": "user_4",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_4"
+                },
+                {
+                  "id": "fee11a49-c7c4-4520-9516-e7db7318bb2a",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.10",
+                  "to_host_ip": "192.168.202.14",
+                  "from_user": "user_0",
+                  "to_user": "user_4"
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.202.13",
+                  "to_host_ip": "192.168.202.14",
+                  "from_user": "user_3",
+                  "to_user": "user_4"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.14",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+              "name": "host_5_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.15",
+              "users": [
+                {
+                  "id": "b61bb1c4-8938-485e-bb5a-d4819d522a6c",
+                  "username": "user_5",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_5"
+                },
+                {
+                  "id": "e3cd0eb7-57b0-44ee-87b5-43e177ccc3db",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.14",
+                  "to_host_ip": "192.168.202.15",
+                  "from_user": "root",
+                  "to_user": "user_5"
+                },
+                {
+                  "type": "privilege_escalation",
+                  "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "",
+                  "to_host_ip": "192.168.202.15",
+                  "from_user": "",
+                  "to_user": ""
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            },
+            {
+              "id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+              "name": "host_6_subnet_2",
+              "os_type": "Ubuntu20",
+              "flavor": "p2.tiny",
+              "ip_address": "192.168.202.16",
+              "users": [
+                {
+                  "id": "916e7604-b296-4f7b-9bda-1d8049443cd0",
+                  "username": "user_6",
+                  "password": "perry123",
+                  "is_admin": false,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/home/user_6"
+                },
+                {
+                  "id": "8a27f366-15ff-4487-816e-4f0272d944dc",
+                  "username": "root",
+                  "password": "perry123",
+                  "is_admin": true,
+                  "is_decoy": false,
+                  "ssh_keys": [],
+                  "home_directory": "/root"
+                }
+              ],
+              "vulnerabilities": [
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.12",
+                  "to_host_ip": "192.168.202.16",
+                  "from_user": "user_2",
+                  "to_user": "user_6"
+                },
+                {
+                  "type": "lateral_movement",
+                  "playbook_path": "vulnerabilities/NetcatShell.yml",
+                  "merge_strategy": "by_host",
+                  "internal_only": false,
+                  "from_host_ip": "192.168.200.16",
+                  "to_host_ip": "192.168.202.16",
+                  "from_user": "user_6",
+                  "to_user": "user_6"
+                }
+              ],
+              "is_attacker": false,
+              "is_decoy": false
+            }
+          ],
+          "gateway_ip": null,
+          "external": false,
+          "sg_name": "subnet_2_sg"
+        }
+      ],
+      "is_external": false
+    }
+  ],
+  "subnet_connections": [
+    {
+      "from_subnet": "subnet_0",
+      "to_subnet": "subnet_1",
+      "protocol": null,
+      "ports": null,
+      "bidirectional": true
+    },
+    {
+      "from_subnet": "subnet_0",
+      "to_subnet": "subnet_2",
+      "protocol": null,
+      "ports": null,
+      "bidirectional": true
+    }
+  ],
+  "goals": [
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+      "target_user_id": "ce3567d5-7275-4b36-b074-0933d2a1a985",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.201.10",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_0_subnet_1.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "e9356793-db4e-48a1-8c45-04508b71a8c8",
+      "target_user_id": "6bcc16f0-f7ee-44ec-9363-f403e8e39cdc",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.201.11",
+      "src_path": "data.json",
+      "dst_path": "/home/user_1/data_host_1_subnet_1.json",
+      "host_user": "user_1"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+      "target_user_id": "c294c028-8b09-4f6f-b779-9fab2e881c8f",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.10",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_0_subnet_2.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+      "target_user_id": "df4d6e0e-2bad-4023-8e0b-fb4d3ebe7b39",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.11",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_1_subnet_2.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+      "target_user_id": "6c17a778-5b95-4c4e-a18f-42cebe4940b0",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.12",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_2_subnet_2.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+      "target_user_id": "090ac0af-4ff2-4de7-ad6c-a6541b42b570",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.13",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_3_subnet_2.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+      "target_user_id": "fee11a49-c7c4-4520-9516-e7db7318bb2a",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.14",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_4_subnet_2.json",
+      "host_user": "root"
+    },
+    {
+      "type": "data_exfiltration",
+      "target_host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+      "target_user_id": "e3cd0eb7-57b0-44ee-87b5-43e177ccc3db",
+      "playbook_path": "goals/data/addData.yml",
+      "host_ip": "192.168.202.15",
+      "src_path": "data.json",
+      "dst_path": "/root/data_host_5_subnet_2.json",
+      "host_user": "root"
+    }
+  ],
+  "attack_paths": [
+    {
+      "id": "3c024311-d012-4682-a369-513a8cc7d092",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+      "target_user_id": "ce3567d5-7275-4b36-b074-0933d2a1a985",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "d8ceac23-d77a-47bb-b814-92668a8e0e86",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.12",
+            "from_user": "root",
+            "to_user": "user_2"
+          }
+        },
+        {
+          "from_host_id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+          "to_host_id": "8e378322-18c8-494d-85ef-09225947a3ab",
+          "from_user_id": "d8ceac23-d77a-47bb-b814-92668a8e0e86",
+          "to_user_id": "a3f61a3a-5a1e-4016-9f44-c3766f8e3ee1",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.12",
+            "to_host_ip": "192.168.201.23",
+            "from_user": "user_2",
+            "to_user": "user_13"
+          }
+        },
+        {
+          "from_host_id": "8e378322-18c8-494d-85ef-09225947a3ab",
+          "to_host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+          "from_user_id": "a3f61a3a-5a1e-4016-9f44-c3766f8e3ee1",
+          "to_user_id": "355f8715-0448-4ee1-9cd7-cdacbb167dec",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.201.23",
+            "to_host_ip": "192.168.201.10",
+            "from_user": "user_13",
+            "to_user": "user_0"
+          }
+        },
+        {
+          "host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+          "from_user_id": "355f8715-0448-4ee1-9cd7-cdacbb167dec",
+          "to_user_id": "ce3567d5-7275-4b36-b074-0933d2a1a985",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.201.10",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "1ebb78cb-64c8-477c-865d-8dd11d04dac6",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "e9356793-db4e-48a1-8c45-04508b71a8c8",
+      "target_user_id": "6bcc16f0-f7ee-44ec-9363-f403e8e39cdc",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "bd3247d6-18cc-49d1-a520-9bde7724e527",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.16",
+            "from_user": "root",
+            "to_user": "user_6"
+          }
+        },
+        {
+          "from_host_id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+          "to_host_id": "522b134f-b387-4074-a420-16bcfe592211",
+          "from_user_id": "bd3247d6-18cc-49d1-a520-9bde7724e527",
+          "to_user_id": "a2171d04-0e60-4d43-9763-55537fdd3d67",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.16",
+            "to_host_ip": "192.168.201.15",
+            "from_user": "user_6",
+            "to_user": "user_5"
+          }
+        },
+        {
+          "from_host_id": "522b134f-b387-4074-a420-16bcfe592211",
+          "to_host_id": "e9356793-db4e-48a1-8c45-04508b71a8c8",
+          "from_user_id": "a2171d04-0e60-4d43-9763-55537fdd3d67",
+          "to_user_id": "6bcc16f0-f7ee-44ec-9363-f403e8e39cdc",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.201.15",
+            "to_host_ip": "192.168.201.11",
+            "from_user": "user_5",
+            "to_user": "user_1"
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "4ffd5bc8-00e6-41e5-b743-ae4ade56431e",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+      "target_user_id": "c294c028-8b09-4f6f-b779-9fab2e881c8f",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "a5033d82-98bb-494c-a061-03c4fe3a65e7",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "d3f493ed-0d99-4d31-931a-cbd8d235fe40",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.10",
+            "from_user": "root",
+            "to_user": "user_0"
+          }
+        },
+        {
+          "from_host_id": "a5033d82-98bb-494c-a061-03c4fe3a65e7",
+          "to_host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+          "from_user_id": "d3f493ed-0d99-4d31-931a-cbd8d235fe40",
+          "to_user_id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.10",
+            "to_host_ip": "192.168.202.14",
+            "from_user": "user_0",
+            "to_user": "user_4"
+          }
+        },
+        {
+          "from_host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+          "to_host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+          "from_user_id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe",
+          "to_user_id": "c87ef066-c348-4c41-8d30-d839b6f004ec",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.202.14",
+            "to_host_ip": "192.168.202.10",
+            "from_user": "user_4",
+            "to_user": "user_0"
+          }
+        },
+        {
+          "host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+          "from_user_id": "c87ef066-c348-4c41-8d30-d839b6f004ec",
+          "to_user_id": "c294c028-8b09-4f6f-b779-9fab2e881c8f",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.10",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "d0ec2ae7-5df6-422d-b95f-045ac314fa59",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+      "target_user_id": "df4d6e0e-2bad-4023-8e0b-fb4d3ebe7b39",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "b9be6be6-3b17-44a2-bc11-0ae3d38ffde3",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "46c828d1-a756-43dd-9fe5-2e74242c6a23",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.11",
+            "from_user": "root",
+            "to_user": "user_1"
+          }
+        },
+        {
+          "from_host_id": "b9be6be6-3b17-44a2-bc11-0ae3d38ffde3",
+          "to_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "from_user_id": "46c828d1-a756-43dd-9fe5-2e74242c6a23",
+          "to_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.11",
+            "to_host_ip": "192.168.202.13",
+            "from_user": "user_1",
+            "to_user": "user_3"
+          }
+        },
+        {
+          "from_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "to_host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+          "from_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "to_user_id": "74f6e3f6-31d8-4c4e-af56-74a2c5646c01",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.202.13",
+            "to_host_ip": "192.168.202.11",
+            "from_user": "user_3",
+            "to_user": "user_1"
+          }
+        },
+        {
+          "host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+          "from_user_id": "74f6e3f6-31d8-4c4e-af56-74a2c5646c01",
+          "to_user_id": "df4d6e0e-2bad-4023-8e0b-fb4d3ebe7b39",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.11",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "25d6e72d-d28f-476e-b4fa-f69b97d16a49",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+      "target_user_id": "6c17a778-5b95-4c4e-a18f-42cebe4940b0",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "d8ceac23-d77a-47bb-b814-92668a8e0e86",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.12",
+            "from_user": "root",
+            "to_user": "user_2"
+          }
+        },
+        {
+          "from_host_id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+          "to_host_id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+          "from_user_id": "d8ceac23-d77a-47bb-b814-92668a8e0e86",
+          "to_user_id": "916e7604-b296-4f7b-9bda-1d8049443cd0",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.12",
+            "to_host_ip": "192.168.202.16",
+            "from_user": "user_2",
+            "to_user": "user_6"
+          }
+        },
+        {
+          "from_host_id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+          "to_host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+          "from_user_id": "916e7604-b296-4f7b-9bda-1d8049443cd0",
+          "to_user_id": "1177d977-8b88-436b-9253-44f7aa0724d4",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.202.16",
+            "to_host_ip": "192.168.202.12",
+            "from_user": "user_6",
+            "to_user": "user_2"
+          }
+        },
+        {
+          "host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+          "from_user_id": "1177d977-8b88-436b-9253-44f7aa0724d4",
+          "to_user_id": "6c17a778-5b95-4c4e-a18f-42cebe4940b0",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.12",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "b3a7ea42-7d13-4523-b179-03a2c9026e00",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+      "target_user_id": "090ac0af-4ff2-4de7-ad6c-a6541b42b570",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "bd3247d6-18cc-49d1-a520-9bde7724e527",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.16",
+            "from_user": "root",
+            "to_user": "user_6"
+          }
+        },
+        {
+          "from_host_id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+          "to_host_id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+          "from_user_id": "bd3247d6-18cc-49d1-a520-9bde7724e527",
+          "to_user_id": "916e7604-b296-4f7b-9bda-1d8049443cd0",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.16",
+            "to_host_ip": "192.168.202.16",
+            "from_user": "user_6",
+            "to_user": "user_6"
+          }
+        },
+        {
+          "from_host_id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+          "to_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "from_user_id": "916e7604-b296-4f7b-9bda-1d8049443cd0",
+          "to_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.202.16",
+            "to_host_ip": "192.168.202.13",
+            "from_user": "user_6",
+            "to_user": "user_3"
+          }
+        },
+        {
+          "host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "from_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "to_user_id": "090ac0af-4ff2-4de7-ad6c-a6541b42b570",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.13",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "8109b236-cf71-4020-9b01-6b88204cb97e",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+      "target_user_id": "fee11a49-c7c4-4520-9516-e7db7318bb2a",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "4f9b549e-cf96-488c-b58a-afd378698912",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "0c2e75ca-e329-42f8-a790-e098842a27da",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.18",
+            "from_user": "root",
+            "to_user": "root"
+          }
+        },
+        {
+          "from_host_id": "4f9b549e-cf96-488c-b58a-afd378698912",
+          "to_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "from_user_id": "0c2e75ca-e329-42f8-a790-e098842a27da",
+          "to_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.18",
+            "to_host_ip": "192.168.202.13",
+            "from_user": "root",
+            "to_user": "user_3"
+          }
+        },
+        {
+          "from_host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+          "to_host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+          "from_user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2",
+          "to_user_id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.202.13",
+            "to_host_ip": "192.168.202.14",
+            "from_user": "user_3",
+            "to_user": "user_4"
+          }
+        },
+        {
+          "host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+          "from_user_id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe",
+          "to_user_id": "fee11a49-c7c4-4520-9516-e7db7318bb2a",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.14",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    },
+    {
+      "id": "27a64862-bacc-40a2-a98d-eaff6b711185",
+      "start_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+      "start_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+      "target_host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+      "target_user_id": "e3cd0eb7-57b0-44ee-87b5-43e177ccc3db",
+      "steps": [
+        {
+          "from_host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+          "to_host_id": "5257c242-464a-4142-aa63-60322421bd0d",
+          "from_user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+          "to_user_id": "a9907efa-8590-44c5-a421-0548fbff9911",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "None",
+            "to_host_ip": "192.168.200.14",
+            "from_user": "root",
+            "to_user": "root"
+          }
+        },
+        {
+          "from_host_id": "5257c242-464a-4142-aa63-60322421bd0d",
+          "to_host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+          "from_user_id": "a9907efa-8590-44c5-a421-0548fbff9911",
+          "to_user_id": "b61bb1c4-8938-485e-bb5a-d4819d522a6c",
+          "vulnerability": {
+            "type": "lateral_movement",
+            "playbook_path": "vulnerabilities/NetcatShell.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "192.168.200.14",
+            "to_host_ip": "192.168.202.15",
+            "from_user": "root",
+            "to_user": "user_5"
+          }
+        },
+        {
+          "host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+          "from_user_id": "b61bb1c4-8938-485e-bb5a-d4819d522a6c",
+          "to_user_id": "e3cd0eb7-57b0-44ee-87b5-43e177ccc3db",
+          "vulnerability": {
+            "type": "privilege_escalation",
+            "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+            "merge_strategy": "by_host",
+            "internal_only": false,
+            "from_host_ip": "",
+            "to_host_ip": "192.168.202.15",
+            "from_user": "",
+            "to_user": ""
+          }
+        }
+      ],
+      "metadata": {
+        "vulnerabilities_assigned": true
+      }
+    }
+  ],
+  "attack_graph": {
+    "nodes": {
+      "b85a0ff9-2823-425c-8dc6-293899e1b88e": {
+        "id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "host_id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+        "user_id": "8e728f68-2283-4ebc-9687-56f67a2d7a52"
+      },
+      "24ca95d4-03ac-4093-b50e-5f3a5fd16761": {
+        "id": "24ca95d4-03ac-4093-b50e-5f3a5fd16761",
+        "host_id": "9941129a-b5c7-4f3c-b5a8-a09f41c7bc55",
+        "user_id": "d8ceac23-d77a-47bb-b814-92668a8e0e86"
+      },
+      "d25ba6f2-d83f-4a32-9417-80a87ad5a0b9": {
+        "id": "d25ba6f2-d83f-4a32-9417-80a87ad5a0b9",
+        "host_id": "8e378322-18c8-494d-85ef-09225947a3ab",
+        "user_id": "a3f61a3a-5a1e-4016-9f44-c3766f8e3ee1"
+      },
+      "c38ee470-7ef7-4fb4-9dbb-9c8b6901dad7": {
+        "id": "c38ee470-7ef7-4fb4-9dbb-9c8b6901dad7",
+        "host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+        "user_id": "355f8715-0448-4ee1-9cd7-cdacbb167dec"
+      },
+      "63600f6b-46fd-452f-8d62-b9ecc369ce8d": {
+        "id": "63600f6b-46fd-452f-8d62-b9ecc369ce8d",
+        "host_id": "945df5d2-82b4-420f-bf62-cc395503ec23",
+        "user_id": "ce3567d5-7275-4b36-b074-0933d2a1a985"
+      },
+      "726ab09e-68f7-488b-8d3e-44b4f626c184": {
+        "id": "726ab09e-68f7-488b-8d3e-44b4f626c184",
+        "host_id": "536ed7fb-9233-476d-95a9-9bc14e313727",
+        "user_id": "bd3247d6-18cc-49d1-a520-9bde7724e527"
+      },
+      "a32f6d9f-8267-4835-a059-c23e4be39964": {
+        "id": "a32f6d9f-8267-4835-a059-c23e4be39964",
+        "host_id": "522b134f-b387-4074-a420-16bcfe592211",
+        "user_id": "a2171d04-0e60-4d43-9763-55537fdd3d67"
+      },
+      "dc1933ee-0c12-45b4-a318-bc45986f4a7e": {
+        "id": "dc1933ee-0c12-45b4-a318-bc45986f4a7e",
+        "host_id": "e9356793-db4e-48a1-8c45-04508b71a8c8",
+        "user_id": "6bcc16f0-f7ee-44ec-9363-f403e8e39cdc"
+      },
+      "40d8b031-1347-46d8-ac64-62cd822f698f": {
+        "id": "40d8b031-1347-46d8-ac64-62cd822f698f",
+        "host_id": "a5033d82-98bb-494c-a061-03c4fe3a65e7",
+        "user_id": "d3f493ed-0d99-4d31-931a-cbd8d235fe40"
+      },
+      "b72e502d-7ad7-4b8b-834d-4d71459b1c48": {
+        "id": "b72e502d-7ad7-4b8b-834d-4d71459b1c48",
+        "host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+        "user_id": "677b8464-bf2c-4f3f-805f-ea9c57bb86fe"
+      },
+      "d146541d-390f-4b20-a3c5-91587123a15b": {
+        "id": "d146541d-390f-4b20-a3c5-91587123a15b",
+        "host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+        "user_id": "c87ef066-c348-4c41-8d30-d839b6f004ec"
+      },
+      "29901d48-022c-4dc9-b847-5593261d741d": {
+        "id": "29901d48-022c-4dc9-b847-5593261d741d",
+        "host_id": "1f698acc-ac2f-4cb8-9c0b-5d29e04f7588",
+        "user_id": "c294c028-8b09-4f6f-b779-9fab2e881c8f"
+      },
+      "7d4d948c-aa94-4b67-badb-75bc95d9ed90": {
+        "id": "7d4d948c-aa94-4b67-badb-75bc95d9ed90",
+        "host_id": "b9be6be6-3b17-44a2-bc11-0ae3d38ffde3",
+        "user_id": "46c828d1-a756-43dd-9fe5-2e74242c6a23"
+      },
+      "149859cc-1be9-4dc5-9d13-6e2257608c27": {
+        "id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+        "user_id": "093eb59f-a35b-4a89-ab11-40d3b2c275a2"
+      },
+      "321b3959-f834-4485-982d-e17a709aaaa1": {
+        "id": "321b3959-f834-4485-982d-e17a709aaaa1",
+        "host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+        "user_id": "74f6e3f6-31d8-4c4e-af56-74a2c5646c01"
+      },
+      "07e2548b-d3fb-495a-aea0-4b0497931c05": {
+        "id": "07e2548b-d3fb-495a-aea0-4b0497931c05",
+        "host_id": "a33efb4a-1dbd-4f00-a4c3-b3b1aa899fd5",
+        "user_id": "df4d6e0e-2bad-4023-8e0b-fb4d3ebe7b39"
+      },
+      "214c2f94-bd99-4f91-8c68-82098582bc2d": {
+        "id": "214c2f94-bd99-4f91-8c68-82098582bc2d",
+        "host_id": "e6fc19f6-9502-405f-aa42-433c7eab87b6",
+        "user_id": "916e7604-b296-4f7b-9bda-1d8049443cd0"
+      },
+      "f82c7c14-4faf-4b36-b982-67982c9581fa": {
+        "id": "f82c7c14-4faf-4b36-b982-67982c9581fa",
+        "host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+        "user_id": "1177d977-8b88-436b-9253-44f7aa0724d4"
+      },
+      "248dd52e-afcd-4018-8da5-a60ba839ab2c": {
+        "id": "248dd52e-afcd-4018-8da5-a60ba839ab2c",
+        "host_id": "0b19d99a-9d54-4c6d-a3fe-94868ba2d16a",
+        "user_id": "6c17a778-5b95-4c4e-a18f-42cebe4940b0"
+      },
+      "03a8bb8a-260e-405c-9860-b4ad5d7dff80": {
+        "id": "03a8bb8a-260e-405c-9860-b4ad5d7dff80",
+        "host_id": "aeba2566-5d62-4047-b1d3-73e2e57f4539",
+        "user_id": "090ac0af-4ff2-4de7-ad6c-a6541b42b570"
+      },
+      "d6731533-561e-4754-bb91-2f11c6122134": {
+        "id": "d6731533-561e-4754-bb91-2f11c6122134",
+        "host_id": "4f9b549e-cf96-488c-b58a-afd378698912",
+        "user_id": "0c2e75ca-e329-42f8-a790-e098842a27da"
+      },
+      "41db698d-5499-4a55-8deb-5c32546c7bd7": {
+        "id": "41db698d-5499-4a55-8deb-5c32546c7bd7",
+        "host_id": "9821fb90-02a5-4017-a05c-ab5325d6eb14",
+        "user_id": "fee11a49-c7c4-4520-9516-e7db7318bb2a"
+      },
+      "fa40cafa-aeb9-4326-b973-531c17b2064e": {
+        "id": "fa40cafa-aeb9-4326-b973-531c17b2064e",
+        "host_id": "5257c242-464a-4142-aa63-60322421bd0d",
+        "user_id": "a9907efa-8590-44c5-a421-0548fbff9911"
+      },
+      "ed676aee-b86e-4b32-b90f-4265b028cb95": {
+        "id": "ed676aee-b86e-4b32-b90f-4265b028cb95",
+        "host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+        "user_id": "b61bb1c4-8938-485e-bb5a-d4819d522a6c"
+      },
+      "7bb514d4-0146-4b1f-b4c8-5fb42447d789": {
+        "id": "7bb514d4-0146-4b1f-b4c8-5fb42447d789",
+        "host_id": "246e35b0-743f-455f-b97f-b24e1ab3876a",
+        "user_id": "e3cd0eb7-57b0-44ee-87b5-43e177ccc3db"
+      }
+    },
+    "edges": {
+      "ce46ee16-92c1-4486-89ed-83ea4fc07cce": {
+        "id": "ce46ee16-92c1-4486-89ed-83ea4fc07cce",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "24ca95d4-03ac-4093-b50e-5f3a5fd16761",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.12",
+          "from_user": "root",
+          "to_user": "user_2"
+        }
+      },
+      "4d92232e-38a7-4be8-8823-4e470c5cf037": {
+        "id": "4d92232e-38a7-4be8-8823-4e470c5cf037",
+        "from_node_id": "24ca95d4-03ac-4093-b50e-5f3a5fd16761",
+        "to_node_id": "d25ba6f2-d83f-4a32-9417-80a87ad5a0b9",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.12",
+          "to_host_ip": "192.168.201.23",
+          "from_user": "user_2",
+          "to_user": "user_13"
+        }
+      },
+      "9b3bfc12-526e-4744-a0c1-06a52d887122": {
+        "id": "9b3bfc12-526e-4744-a0c1-06a52d887122",
+        "from_node_id": "d25ba6f2-d83f-4a32-9417-80a87ad5a0b9",
+        "to_node_id": "c38ee470-7ef7-4fb4-9dbb-9c8b6901dad7",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.201.23",
+          "to_host_ip": "192.168.201.10",
+          "from_user": "user_13",
+          "to_user": "user_0"
+        }
+      },
+      "ac1435fe-fae6-47b0-9850-521d00dd73df": {
+        "id": "ac1435fe-fae6-47b0-9850-521d00dd73df",
+        "from_node_id": "c38ee470-7ef7-4fb4-9dbb-9c8b6901dad7",
+        "to_node_id": "63600f6b-46fd-452f-8d62-b9ecc369ce8d",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.201.10",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "30946fd0-5d10-484d-abf5-2ea730617612": {
+        "id": "30946fd0-5d10-484d-abf5-2ea730617612",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "726ab09e-68f7-488b-8d3e-44b4f626c184",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.16",
+          "from_user": "root",
+          "to_user": "user_6"
+        }
+      },
+      "b19216eb-f72f-4908-8c02-d2035b75a7bc": {
+        "id": "b19216eb-f72f-4908-8c02-d2035b75a7bc",
+        "from_node_id": "726ab09e-68f7-488b-8d3e-44b4f626c184",
+        "to_node_id": "a32f6d9f-8267-4835-a059-c23e4be39964",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.16",
+          "to_host_ip": "192.168.201.15",
+          "from_user": "user_6",
+          "to_user": "user_5"
+        }
+      },
+      "5807c77e-98a8-4e61-8967-e3802fa9a99c": {
+        "id": "5807c77e-98a8-4e61-8967-e3802fa9a99c",
+        "from_node_id": "a32f6d9f-8267-4835-a059-c23e4be39964",
+        "to_node_id": "dc1933ee-0c12-45b4-a318-bc45986f4a7e",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.201.15",
+          "to_host_ip": "192.168.201.11",
+          "from_user": "user_5",
+          "to_user": "user_1"
+        }
+      },
+      "2f239463-14c8-47b6-be73-e23e5cb7e504": {
+        "id": "2f239463-14c8-47b6-be73-e23e5cb7e504",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "40d8b031-1347-46d8-ac64-62cd822f698f",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.10",
+          "from_user": "root",
+          "to_user": "user_0"
+        }
+      },
+      "7b06aa32-9865-4cc6-8636-b1eeb9d179fa": {
+        "id": "7b06aa32-9865-4cc6-8636-b1eeb9d179fa",
+        "from_node_id": "40d8b031-1347-46d8-ac64-62cd822f698f",
+        "to_node_id": "b72e502d-7ad7-4b8b-834d-4d71459b1c48",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.10",
+          "to_host_ip": "192.168.202.14",
+          "from_user": "user_0",
+          "to_user": "user_4"
+        }
+      },
+      "f515d440-0bb2-4ae4-ad8c-be6af3c9bd8f": {
+        "id": "f515d440-0bb2-4ae4-ad8c-be6af3c9bd8f",
+        "from_node_id": "b72e502d-7ad7-4b8b-834d-4d71459b1c48",
+        "to_node_id": "d146541d-390f-4b20-a3c5-91587123a15b",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.202.14",
+          "to_host_ip": "192.168.202.10",
+          "from_user": "user_4",
+          "to_user": "user_0"
+        }
+      },
+      "d44cc36e-808c-4d5f-8e0a-7f81cc7e7327": {
+        "id": "d44cc36e-808c-4d5f-8e0a-7f81cc7e7327",
+        "from_node_id": "d146541d-390f-4b20-a3c5-91587123a15b",
+        "to_node_id": "29901d48-022c-4dc9-b847-5593261d741d",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.10",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "ad714fbe-8054-4ae6-b135-775189b17ec9": {
+        "id": "ad714fbe-8054-4ae6-b135-775189b17ec9",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "7d4d948c-aa94-4b67-badb-75bc95d9ed90",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.11",
+          "from_user": "root",
+          "to_user": "user_1"
+        }
+      },
+      "53586096-a69c-4eed-b8d8-503eab91f1d0": {
+        "id": "53586096-a69c-4eed-b8d8-503eab91f1d0",
+        "from_node_id": "7d4d948c-aa94-4b67-badb-75bc95d9ed90",
+        "to_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.11",
+          "to_host_ip": "192.168.202.13",
+          "from_user": "user_1",
+          "to_user": "user_3"
+        }
+      },
+      "be665370-4809-4b21-9a3f-ebf3b9b55e9c": {
+        "id": "be665370-4809-4b21-9a3f-ebf3b9b55e9c",
+        "from_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "to_node_id": "321b3959-f834-4485-982d-e17a709aaaa1",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.202.13",
+          "to_host_ip": "192.168.202.11",
+          "from_user": "user_3",
+          "to_user": "user_1"
+        }
+      },
+      "7b8b9ed6-9b0b-4cca-bc5b-1d2d9d8ee600": {
+        "id": "7b8b9ed6-9b0b-4cca-bc5b-1d2d9d8ee600",
+        "from_node_id": "321b3959-f834-4485-982d-e17a709aaaa1",
+        "to_node_id": "07e2548b-d3fb-495a-aea0-4b0497931c05",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.11",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "a736a93c-2fff-40b5-90b0-7d362816ca96": {
+        "id": "a736a93c-2fff-40b5-90b0-7d362816ca96",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "24ca95d4-03ac-4093-b50e-5f3a5fd16761",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.12",
+          "from_user": "root",
+          "to_user": "user_2"
+        }
+      },
+      "e89c3772-7430-4762-8b79-4e380a4f4ffd": {
+        "id": "e89c3772-7430-4762-8b79-4e380a4f4ffd",
+        "from_node_id": "24ca95d4-03ac-4093-b50e-5f3a5fd16761",
+        "to_node_id": "214c2f94-bd99-4f91-8c68-82098582bc2d",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.12",
+          "to_host_ip": "192.168.202.16",
+          "from_user": "user_2",
+          "to_user": "user_6"
+        }
+      },
+      "bdefab73-7bab-4b09-abf2-54eb9645906b": {
+        "id": "bdefab73-7bab-4b09-abf2-54eb9645906b",
+        "from_node_id": "214c2f94-bd99-4f91-8c68-82098582bc2d",
+        "to_node_id": "f82c7c14-4faf-4b36-b982-67982c9581fa",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.202.16",
+          "to_host_ip": "192.168.202.12",
+          "from_user": "user_6",
+          "to_user": "user_2"
+        }
+      },
+      "85713c5b-e9b8-4af1-b939-21703028c7ea": {
+        "id": "85713c5b-e9b8-4af1-b939-21703028c7ea",
+        "from_node_id": "f82c7c14-4faf-4b36-b982-67982c9581fa",
+        "to_node_id": "248dd52e-afcd-4018-8da5-a60ba839ab2c",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.12",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "8be17d3e-d7ae-48ce-89fc-8718111cead8": {
+        "id": "8be17d3e-d7ae-48ce-89fc-8718111cead8",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "726ab09e-68f7-488b-8d3e-44b4f626c184",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.16",
+          "from_user": "root",
+          "to_user": "user_6"
+        }
+      },
+      "45e18b48-f38d-44bb-a626-74ef1f1abe1c": {
+        "id": "45e18b48-f38d-44bb-a626-74ef1f1abe1c",
+        "from_node_id": "726ab09e-68f7-488b-8d3e-44b4f626c184",
+        "to_node_id": "214c2f94-bd99-4f91-8c68-82098582bc2d",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.16",
+          "to_host_ip": "192.168.202.16",
+          "from_user": "user_6",
+          "to_user": "user_6"
+        }
+      },
+      "b5e9e45c-a177-4fc4-9321-1c749d74a84f": {
+        "id": "b5e9e45c-a177-4fc4-9321-1c749d74a84f",
+        "from_node_id": "214c2f94-bd99-4f91-8c68-82098582bc2d",
+        "to_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.202.16",
+          "to_host_ip": "192.168.202.13",
+          "from_user": "user_6",
+          "to_user": "user_3"
+        }
+      },
+      "f6c5a9b2-4988-496f-8d8d-d5323056b46a": {
+        "id": "f6c5a9b2-4988-496f-8d8d-d5323056b46a",
+        "from_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "to_node_id": "03a8bb8a-260e-405c-9860-b4ad5d7dff80",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/writeablePasswd/writeablePasswd.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.13",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "f04bc22c-f83a-4419-becc-95c42fee7e05": {
+        "id": "f04bc22c-f83a-4419-becc-95c42fee7e05",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "d6731533-561e-4754-bb91-2f11c6122134",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.18",
+          "from_user": "root",
+          "to_user": "root"
+        }
+      },
+      "ab361ad2-b42c-4662-bb78-1260f4e93311": {
+        "id": "ab361ad2-b42c-4662-bb78-1260f4e93311",
+        "from_node_id": "d6731533-561e-4754-bb91-2f11c6122134",
+        "to_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.18",
+          "to_host_ip": "192.168.202.13",
+          "from_user": "root",
+          "to_user": "user_3"
+        }
+      },
+      "50f90d5c-968b-4f98-99bc-65d36f6c58ad": {
+        "id": "50f90d5c-968b-4f98-99bc-65d36f6c58ad",
+        "from_node_id": "149859cc-1be9-4dc5-9d13-6e2257608c27",
+        "to_node_id": "b72e502d-7ad7-4b8b-834d-4d71459b1c48",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/apacheStruts/setupStruts.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.202.13",
+          "to_host_ip": "192.168.202.14",
+          "from_user": "user_3",
+          "to_user": "user_4"
+        }
+      },
+      "dbefac46-adc5-493b-9cef-fcba4c0f1354": {
+        "id": "dbefac46-adc5-493b-9cef-fcba4c0f1354",
+        "from_node_id": "b72e502d-7ad7-4b8b-834d-4d71459b1c48",
+        "to_node_id": "41db698d-5499-4a55-8deb-5c32546c7bd7",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.14",
+          "from_user": "",
+          "to_user": ""
+        }
+      },
+      "3817d9c2-856b-4901-86ea-568f9e13088f": {
+        "id": "3817d9c2-856b-4901-86ea-568f9e13088f",
+        "from_node_id": "b85a0ff9-2823-425c-8dc6-293899e1b88e",
+        "to_node_id": "fa40cafa-aeb9-4326-b973-531c17b2064e",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "None",
+          "to_host_ip": "192.168.200.14",
+          "from_user": "root",
+          "to_user": "root"
+        }
+      },
+      "c813449c-ead6-4a58-9767-d27dc6e38f91": {
+        "id": "c813449c-ead6-4a58-9767-d27dc6e38f91",
+        "from_node_id": "fa40cafa-aeb9-4326-b973-531c17b2064e",
+        "to_node_id": "ed676aee-b86e-4b32-b90f-4265b028cb95",
+        "is_lateral_movement": true,
+        "vulnerability": {
+          "type": "lateral_movement",
+          "playbook_path": "vulnerabilities/NetcatShell.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "192.168.200.14",
+          "to_host_ip": "192.168.202.15",
+          "from_user": "root",
+          "to_user": "user_5"
+        }
+      },
+      "015ddf65-079a-4dcd-94f8-1fcfc79d9680": {
+        "id": "015ddf65-079a-4dcd-94f8-1fcfc79d9680",
+        "from_node_id": "ed676aee-b86e-4b32-b90f-4265b028cb95",
+        "to_node_id": "7bb514d4-0146-4b1f-b4c8-5fb42447d789",
+        "is_lateral_movement": false,
+        "vulnerability": {
+          "type": "privilege_escalation",
+          "playbook_path": "vulnerabilities/privledge_escalation/sudobaron/sudobaron.yml",
+          "merge_strategy": "by_host",
+          "internal_only": false,
+          "from_host_ip": "",
+          "to_host_ip": "192.168.202.15",
+          "from_user": "",
+          "to_user": ""
+        }
+      }
+    },
+    "adjacency": {
+      "b85a0ff9-2823-425c-8dc6-293899e1b88e": [
+        "ce46ee16-92c1-4486-89ed-83ea4fc07cce",
+        "30946fd0-5d10-484d-abf5-2ea730617612",
+        "2f239463-14c8-47b6-be73-e23e5cb7e504",
+        "ad714fbe-8054-4ae6-b135-775189b17ec9",
+        "a736a93c-2fff-40b5-90b0-7d362816ca96",
+        "8be17d3e-d7ae-48ce-89fc-8718111cead8",
+        "f04bc22c-f83a-4419-becc-95c42fee7e05",
+        "3817d9c2-856b-4901-86ea-568f9e13088f"
+      ],
+      "24ca95d4-03ac-4093-b50e-5f3a5fd16761": [
+        "4d92232e-38a7-4be8-8823-4e470c5cf037",
+        "e89c3772-7430-4762-8b79-4e380a4f4ffd"
+      ],
+      "d25ba6f2-d83f-4a32-9417-80a87ad5a0b9": [
+        "9b3bfc12-526e-4744-a0c1-06a52d887122"
+      ],
+      "c38ee470-7ef7-4fb4-9dbb-9c8b6901dad7": [
+        "ac1435fe-fae6-47b0-9850-521d00dd73df"
+      ],
+      "726ab09e-68f7-488b-8d3e-44b4f626c184": [
+        "b19216eb-f72f-4908-8c02-d2035b75a7bc",
+        "45e18b48-f38d-44bb-a626-74ef1f1abe1c"
+      ],
+      "a32f6d9f-8267-4835-a059-c23e4be39964": [
+        "5807c77e-98a8-4e61-8967-e3802fa9a99c"
+      ],
+      "40d8b031-1347-46d8-ac64-62cd822f698f": [
+        "7b06aa32-9865-4cc6-8636-b1eeb9d179fa"
+      ],
+      "b72e502d-7ad7-4b8b-834d-4d71459b1c48": [
+        "f515d440-0bb2-4ae4-ad8c-be6af3c9bd8f",
+        "dbefac46-adc5-493b-9cef-fcba4c0f1354"
+      ],
+      "d146541d-390f-4b20-a3c5-91587123a15b": [
+        "d44cc36e-808c-4d5f-8e0a-7f81cc7e7327"
+      ],
+      "7d4d948c-aa94-4b67-badb-75bc95d9ed90": [
+        "53586096-a69c-4eed-b8d8-503eab91f1d0"
+      ],
+      "149859cc-1be9-4dc5-9d13-6e2257608c27": [
+        "be665370-4809-4b21-9a3f-ebf3b9b55e9c",
+        "f6c5a9b2-4988-496f-8d8d-d5323056b46a",
+        "50f90d5c-968b-4f98-99bc-65d36f6c58ad"
+      ],
+      "321b3959-f834-4485-982d-e17a709aaaa1": [
+        "7b8b9ed6-9b0b-4cca-bc5b-1d2d9d8ee600"
+      ],
+      "214c2f94-bd99-4f91-8c68-82098582bc2d": [
+        "bdefab73-7bab-4b09-abf2-54eb9645906b",
+        "b5e9e45c-a177-4fc4-9321-1c749d74a84f"
+      ],
+      "f82c7c14-4faf-4b36-b982-67982c9581fa": [
+        "85713c5b-e9b8-4af1-b939-21703028c7ea"
+      ],
+      "d6731533-561e-4754-bb91-2f11c6122134": [
+        "ab361ad2-b42c-4662-bb78-1260f4e93311"
+      ],
+      "fa40cafa-aeb9-4326-b973-531c17b2064e": [
+        "c813449c-ead6-4a58-9767-d27dc6e38f91"
+      ],
+      "ed676aee-b86e-4b32-b90f-4265b028cb95": [
+        "015ddf65-079a-4dcd-94f8-1fcfc79d9680"
+      ]
+    }
+  },
+  "attacker_host": {
+    "id": "c01c7776-cca9-43f7-a599-41b393b762a7",
+    "name": "external_attacker",
+    "os_type": "KaliLinux",
+    "flavor": "p2.tiny",
+    "ip_address": null,
+    "users": [
+      {
+        "id": "8e728f68-2283-4ebc-9687-56f67a2d7a52",
+        "username": "root",
+        "password": "perry123",
+        "is_admin": true,
+        "is_decoy": false,
+        "ssh_keys": [],
+        "home_directory": "/root"
+      }
+    ],
+    "vulnerabilities": [],
+    "is_attacker": false,
+    "is_decoy": false
+  }
+}

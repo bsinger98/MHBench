@@ -1,5 +1,5 @@
 from .equifax_instance import EquifaxInstance
-from ansible.AnsibleRunner import AnsibleRunner
+from ansible.ansible_runner import AnsibleRunner
 
 
 class EquifaxSmall(EquifaxInstance):

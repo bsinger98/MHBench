@@ -1,15 +1,12 @@
 import time
 
-from ansible.AnsibleRunner import AnsibleRunner
+from ansible.ansible_runner import AnsibleRunner
 
 from ansible.deployment_instance import (
     CheckIfHostUp,
-    InstallBasePackages,
-    InstallKaliPackages,
     SetupServerSSHKeys,
 )
 from ansible.common import CreateUser
-from ansible.caldera import InstallAttacker
 from ansible.vulnerabilities import (
     SetupSudoEdit,
     SetupWriteableSudoers,
@@ -20,11 +17,11 @@ from ansible.vulnerabilities import (
 )
 from ansible.goals import AddData
 
-from environment.environment import Environment
-from environment.network import Network, Subnet
-from environment.openstack.openstack_processor import get_hosts_on_subnet
+from src.environment import Environment
+from src.legacy_models import Network, Subnet
+from src.utility.openstack_processor import get_hosts_on_subnet
 
-import config.Config as config
+from config.config import Config
 
 NUMBER_RING_HOSTS = 5
 
@@ -35,7 +32,7 @@ class DevEnvironment(Environment):
         ansible_runner: AnsibleRunner,
         openstack_conn,
         caldera_ip,
-        config: config.Config,
+        config: Config,
         topology="openstack_dev",
     ):
         super().__init__(ansible_runner, openstack_conn, caldera_ip, config)
@@ -83,14 +80,6 @@ class DevEnvironment(Environment):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.hosts[0].ip))
         time.sleep(3)
 
-        # Install all base packages
-        self.ansible_runner.run_playbook(
-            InstallBasePackages(self.network.get_all_host_ips())
-        )
-
-        # Install kali packages
-        self.ansible_runner.run_playbook(InstallKaliPackages(self.attacker_host.ip))
-
         # Setup users on all hosts
         for host in self.network.get_all_hosts():
             for user in host.users:
@@ -119,15 +108,3 @@ class DevEnvironment(Environment):
         self.ansible_runner.run_playbook(
             AddData(self.privledge_box.ip, "root", "~/data1.json")
         )
-
-    def runtime_setup(self):
-        # Setup attacker
-        self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
-        self.ansible_runner.run_playbook(
-            InstallAttacker(self.attacker_host.ip, "root", self.caldera_ip)
-        )
-
-        # Priv box host
-        # self.ansible_runner.run_playbook(
-        #     InstallAttacker(self.privledge_box.ip, "root", self.caldera_ip)
-        # )
