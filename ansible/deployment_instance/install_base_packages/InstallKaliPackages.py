@@ -1,4 +1,4 @@
-from ansible.AnsiblePlaybook import AnsiblePlaybook
+from ansible.ansible_playbook import AnsiblePlaybook
 
 
 class InstallKaliPackages(AnsiblePlaybook):
