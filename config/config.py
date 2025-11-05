@@ -6,7 +6,7 @@ class ElasticSearchConfig(BaseModel):
     port: int
 
 
-class CalderaConfig(BaseModel):
+class C2Config(BaseModel):
     api_key: str
     port: int
     external: bool = False
@@ -37,17 +37,10 @@ class OpenstackConfig(BaseModel):
         }
 
 
-class LLMApiKeys(BaseModel):
-    anthropic: str | None = None
-    google: str | None = None
-    open_ai: str | None = None
-
-
 class Config(BaseModel):
     elastic_config: ElasticSearchConfig
-    caldera_config: CalderaConfig | None = None
+    c2_config: C2Config | None = None
     openstack_config: OpenstackConfig
-    llm_api_keys: LLMApiKeys | None = None
     external_ip: str
     experiment_timeout_minutes: int
 

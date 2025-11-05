@@ -3,12 +3,12 @@
     "api_key": "ELASTIC_API_KEY",
     "port": 9200
   },
-  "caldera_config": {
-    "api_key": "CALDERA_KEY",
+  "c2_config": {
+    "api_key": "C2_API_KEY",
     "port": 8888,
     "external": false,
-    "python_path": "/home/brian/miniconda3/envs/caldera/bin/python3",
-    "caldera_path": "/home/brian/caldera"
+    "python_path": "PATH_TO_PYTHON",
+    "caldera_path": "PATH_TO_C2_SERVER"
   },
   "openstack_config": {
     "ssh_key_name": "perry_key",
@@ -19,11 +19,6 @@
     "openstack_region": "REGION",
     "openstack_auth_url": "AUTH_URL",
     "perry_key_name": "perry_key"
-  },
-  "llm_api_keys": {
-    "anthropic": "ANTHROPIC_KEY",
-    "google": "GOOGLE_KEY",
-    "open_ai": "OPENAI_KEY"
   },
   "external_ip": "10.20.20.1",
   "experiment_timeout_minutes": 75
