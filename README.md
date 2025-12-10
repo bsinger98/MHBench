@@ -3,12 +3,12 @@
 <div align="center">
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-![GitHub issues](https://img.shields.io/github/issues/bsinger98/Incalmo?style=flat-square)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/bsinger98/Incalmo?style=flat-square)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bsinger98/Incalmo?style=flat-square)
-![GitHub contributors](https://img.shields.io/github/contributors/bsinger98/Incalmo?style=flat-square)
-![GitHub stars](https://img.shields.io/github/stars/bsinger98/Incalmo?style=flat-square)
-![GitHub forks](https://img.shields.io/github/forks/bsinger98/Incalmo?style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues/bsinger98/MHBench?style=flat-square)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/bsinger98/MHBench?style=flat-square)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bsinger98/MHBench?style=flat-square)
+![GitHub contributors](https://img.shields.io/github/contributors/bsinger98/MHBench?style=flat-square)
+![GitHub stars](https://img.shields.io/github/stars/bsinger98/MHBench?style=flat-square)
+![GitHub forks](https://img.shields.io/github/forks/bsinger98/MHBench?style=flat-square)
 
 </div>
 
