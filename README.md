@@ -13,8 +13,12 @@
 MHBench is a system for generating multi-host environments to evaluate autonomous attackers against autonomous defenders.
 MHBench has 10 manually tuned environments based on real-world reports and 30 programmatically generated environments.
 
+</div>
+
 **Research Papers**:
+
 [On the Feasibility of Using LLMs to Execute Multistage Network Attacks](https://arxiv.org/abs/2501.16466)
+
 [Perry: A High-level Framework for Accelerating Cyber Deception Experimentation](https://arxiv.org/pdf/2506.20770)
 
 ## Requirements
