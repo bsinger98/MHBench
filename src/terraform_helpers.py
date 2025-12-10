@@ -32,7 +32,7 @@ def _temporary_tfvars(config: Config) -> Iterator[str]:
 
 
 def deploy_network(name: str, config: Config) -> None:
-    deployment_dir = os.path.join("environment/topologies", name)
+    deployment_dir = os.path.join("src/topologies", name)
     subprocess.run(
         ["terraform", "init"],
         cwd=deployment_dir,
@@ -56,7 +56,7 @@ def deploy_network(name: str, config: Config) -> None:
 
 
 def destroy_network(name: str, config: Config) -> None:
-    deployment_dir = os.path.join("environment/topologies", name)
+    deployment_dir = os.path.join("src/topologies", name)
     subprocess.run(
         ["terraform", "init"],
         cwd=deployment_dir,
