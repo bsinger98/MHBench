@@ -1,4 +1,4 @@
-from utility.logging import log_event
+from src.utility.logging import log_event
 
 from ansible.ansible_runner import AnsibleRunner
 

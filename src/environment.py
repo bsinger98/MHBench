@@ -19,7 +19,7 @@ from ansible.caldera import InstallAttacker
 from ansible.defender import InstallSysFlow
 from ansible.defender.falco.install_falco import InstallFalco
 
-from utility.logging import get_logger
+from src.utility.logging import get_logger
 
 logger = get_logger()
 

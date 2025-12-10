@@ -5,11 +5,11 @@ from datetime import datetime
 import os
 from types import SimpleNamespace
 
-from config import load_config
+from config.config_service import ConfigService
 from src.environment import Environment
 from ansible.ansible_runner import AnsibleRunner
 
-env_module = importlib.import_module("environment")
+env_module = importlib.import_module("src.environment")
 
 
 @click.group()
@@ -29,7 +29,7 @@ def env(ctx, type: str, config_file: str):
     os.makedirs(experiment_dir, exist_ok=True)
 
     ctx.ensure_object(SimpleNamespace)
-    config = load_config(config_file)
+    config = ConfigService().get_config()
     ctx.obj.config = config
     ctx.obj.config_path = config_file
 
