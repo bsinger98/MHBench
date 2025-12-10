@@ -10,10 +10,10 @@
 ![GitHub stars](https://img.shields.io/github/stars/bsinger98/Incalmo?style=flat-square)
 ![GitHub forks](https://img.shields.io/github/forks/bsinger98/Incalmo?style=flat-square)
 
+</div>
+
 MHBench is a system for generating multi-host environments to evaluate autonomous attackers against autonomous defenders.
 MHBench has 10 manually tuned environments based on real-world reports and 30 programmatically generated environments.
-
-</div>
 
 **Research Papers**:
 
