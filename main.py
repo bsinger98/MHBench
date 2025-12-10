@@ -9,7 +9,23 @@ from config.config_service import ConfigService
 from src.environment import Environment
 from ansible.ansible_runner import AnsibleRunner
 
-env_module = importlib.import_module("src.environment")
+env_module = importlib.import_module("src.specifications")
+
+
+def create_openstack_connection(openstack_cfg):
+    """
+    Build an OpenStack connection directly from the app config instead of
+    relying on a clouds.yml entry.
+    """
+    return openstack.connect(
+        auth_url=openstack_cfg.openstack_auth_url,
+        username=openstack_cfg.openstack_username,
+        password=openstack_cfg.openstack_password,
+        project_name=openstack_cfg.project_name,
+        region_name=openstack_cfg.openstack_region,
+        user_domain_name="Default",
+        project_domain_name="Default",
+    )
 
 
 @click.group()
@@ -29,13 +45,14 @@ def env(ctx, type: str, config_file: str):
     os.makedirs(experiment_dir, exist_ok=True)
 
     ctx.ensure_object(SimpleNamespace)
-    config = ConfigService().get_config()
+    config = ConfigService(config_file).get_config()
     ctx.obj.config = config
     ctx.obj.config_path = config_file
 
-    openstack_conn = openstack.connect(cloud="default")
+    openstack_conn = create_openstack_connection(config.openstack_config)
+    ssh_key_path = os.path.expanduser(config.openstack_config.ssh_key_path)
     ansible_runner = AnsibleRunner(
-        ctx.obj.config.openstack_config.ssh_key_path,
+        ssh_key_path,
         None,
         "./ansible/",
         experiment_dir,
@@ -92,3 +109,8 @@ def teardown(ctx):
 def deploy_network(ctx):
     click.echo("Setting up network...")
     ctx.obj.environment.deploy_topology()
+
+
+if __name__ == "__main__":
+    # Entrypoint for the CLI
+    env()
