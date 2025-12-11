@@ -12,7 +12,7 @@ from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupStrutsVulnerability, SetupNetcatShell
 from ansible.goals import AddData
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -24,7 +24,7 @@ import random
 fake = Faker()
 
 
-class EnterpriseA(Environment):
+class EnterpriseA(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,

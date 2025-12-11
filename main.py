@@ -6,13 +6,14 @@ import os
 from types import SimpleNamespace
 
 from config.config_service import ConfigService
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
+from src.env_gen_deployer import EnvGenDeployer
 from ansible.ansible_runner import AnsibleRunner
 from src.models.network import NetworkTopology
 import json
-from src.openstack.orchestrator import OpenstackEnvOrchestrator
 
-env_module = importlib.import_module("src.specifications")
+
+env_module = importlib.import_module("src.environments.terraform.specifications")
 
 
 def create_openstack_connection(openstack_cfg):
@@ -68,7 +69,7 @@ def env(ctx, type: str, config_file: str):
     )
 
     # Try to load as a specification class first
-    environment: Environment
+    environment: TerraformDeployer
     try:
         env_instance_class = getattr(env_module, type)
         environment = env_instance_class(
@@ -98,12 +99,12 @@ def env(ctx, type: str, config_file: str):
             click.echo(f"Error: Could not find environment '{env_path}'", err=True)
             ctx.exit(1)
 
-        orchestrator = OpenstackEnvOrchestrator(config, openstack_conn)
+        orchestrator = EnvGenDeployer(config, openstack_conn)
 
     # Add deployment instance to context
     ctx.obj.environment = environment
-    ctx.obj.orchestrator = orchestrator
-    ctx.obj.topology = topology
+    # ctx.obj.orchestrator = orchestrator
+    # ctx.obj.topology = topology
 
 
 @env.command()

@@ -21,8 +21,8 @@ from src.models import (
     PrivilegeEscalationStep,
 )
 from src.models.goals import DataExfiltrationGoal
-from ansible.AnsibleRunner import AnsibleRunner
-from ansible.AnsiblePlaybook import AnsiblePlaybook
+from ansible.ansible_runner import AnsibleRunner
+from ansible.ansible_playbook import AnsiblePlaybook
 
 from ansible.deployment_instance import (
     InstallBasePackages,

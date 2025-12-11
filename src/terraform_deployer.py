@@ -38,7 +38,7 @@ def find_manage_server(
     return None, None
 
 
-class Environment:
+class TerraformDeployer:
     def __init__(
         self,
         ansible_runner: AnsibleRunner,

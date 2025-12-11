@@ -13,7 +13,7 @@ from ansible.goals import AddData
 from ansible.vulnerabilities import SetupSudoBaron, SetupWriteablePasswd
 from ansible.vulnerabilities import SetupNetcatShell, SetupStrutsVulnerability
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -26,7 +26,7 @@ fake = Faker()
 NUMBER_RING_HOSTS = 25
 
 
-class StarPE(Environment):
+class StarPE(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,

@@ -1,5 +1,5 @@
 from openstack.connection import Connection
-from utility.logging import get_logger
+from src.utility.logging import get_logger
 
 logger = get_logger()
 

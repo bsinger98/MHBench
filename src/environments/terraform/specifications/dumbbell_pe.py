@@ -1,16 +1,19 @@
+import time
 from src.utility.logging import log_event
 
 from ansible.ansible_runner import AnsibleRunner
 
 from ansible.deployment_instance import (
+    CheckIfHostUp,
     SetupServerSSHKeys,
     CreateSSHKey,
 )
 from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupStrutsVulnerability
+from ansible.vulnerabilities import SetupSudoBaron, SetupWriteablePasswd
 from ansible.goals import AddData
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -21,7 +24,7 @@ from faker import Faker
 fake = Faker()
 
 
-class Dumbbell(Environment):
+class DumbbellPE(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,
@@ -74,9 +77,8 @@ class Dumbbell(Environment):
         self.find_management_server()
         self.parse_network()
 
-        # Setup apache struts and vulnerability
-        webserver_ips = [host.ip for host in self.webservers]
-        self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
+        self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
+        time.sleep(3)
 
         # Setup users on corporte hosts
         for host in self.network.get_all_hosts():
@@ -86,12 +88,23 @@ class Dumbbell(Environment):
         for host in self.webservers:
             self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
 
+        # Setup apache struts and vulnerability
+        webserver_ips = [host.ip for host in self.webservers]
+        self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
+
+        # Setup privledge escalation vulnerabilities
+        # even hosts SetupWriteableSudoers
+        # odd hosts SetupSudoEdit
+        for i in range(len(webserver_ips)):
+            if i % 2:
+                self.ansible_runner.run_playbook(SetupSudoBaron(webserver_ips[i]))
+            else:
+                self.ansible_runner.run_playbook(SetupWriteablePasswd(webserver_ips[i]))
+
         for i, webserver in enumerate(self.webservers):
             database = self.database_hosts[i]
             self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver.ip, webserver.users[0], database.ip, database.users[0]
-                )
+                SetupServerSSHKeys(webserver.ip, "root", database.ip, database.users[0])
             )
 
         # Add data to database hosts

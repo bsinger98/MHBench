@@ -9,10 +9,10 @@ from ansible.deployment_instance import (
     CreateSSHKey,
 )
 from ansible.common import CreateUser
+from ansible.vulnerabilities import SetupSudoBaron, SetupWriteablePasswd
 from ansible.goals import AddData
-from ansible.vulnerabilities import SetupNetcatShell, SetupStrutsVulnerability
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -25,14 +25,14 @@ fake = Faker()
 NUMBER_RING_HOSTS = 25
 
 
-class Star(Environment):
+class PEChainEnvironment(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,
         openstack_conn,
         caldera_ip,
         config: Config,
-        topology="star",
+        topology="ring",
     ):
         super().__init__(ansible_runner, openstack_conn, caldera_ip, config)
         self.topology = topology
@@ -40,34 +40,19 @@ class Star(Environment):
         self.root_flags = {}
 
     def parse_network(self):
-        self.star_hosts = get_hosts_on_subnet(
+        self.ring_hosts = get_hosts_on_subnet(
             self.openstack_conn, "192.168.200.0/24", host_name_prefix="host"
         )
-
-        # Distribute hosts into 3 categories
-        self.webservers = self.star_hosts[: len(self.star_hosts) // 3]
-
-        self.nc_hosts = self.star_hosts[
-            len(self.star_hosts) // 3 : 2 * len(self.star_hosts) // 3
-        ]
-
-        self.ssh_hosts = self.star_hosts[2 * len(self.star_hosts) // 3 :]
 
         self.attacker_host = get_hosts_on_subnet(
             self.openstack_conn, "192.168.202.0/24", host_name_prefix="attacker"
         )[0]
         self.attacker_host.users.append("root")
 
-        ringSubnet = Subnet("ring_network", self.star_hosts, "employee_one_group")
+        ringSubnet = Subnet("ring_network", self.ring_hosts, "employee_one_group")
 
         self.network = Network("ring_network", [ringSubnet])
-
-        # Setup tomcat users on all webservers
-        for host in self.webservers:
-            host.users.append("tomcat")
-
-        # Setup normal users on all hosts
-        for host in self.nc_hosts + self.ssh_hosts:
+        for host in self.network.get_all_hosts():
             username = host.name.replace("_", "")
             host.users.append(username)
 
@@ -77,40 +62,54 @@ class Star(Environment):
             )
 
     def compile_setup(self):
-        log_event("Deployment Instace", "Setting up ICS network")
+        log_event("Deployment Instace", "Setting up PE Chain network")
         self.find_management_server()
         self.parse_network()
 
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
 
-        # Setup other users on all hosts
+        # Setup privledge escalation vulnerabilities
+        # even hosts SetupWriteableSudoers
+        # odd hosts SetupSudoEdit
+        ring_host_ips = [host.ip for host in self.ring_hosts]
+        for i in range(len(ring_host_ips)):
+            if i % 2:
+                self.ansible_runner.run_playbook(SetupSudoBaron(ring_host_ips[i]))
+            else:
+                self.ansible_runner.run_playbook(SetupWriteablePasswd(ring_host_ips[i]))
+
+        # Setup users on all hosts
         for host in self.network.get_all_hosts():
             for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
+                self.ansible_runner.run_playbook(
+                    CreateUser(host.ip, user, "ubuntu", "ubuntu")
+                )
+                self.ansible_runner.run_playbook(CreateSSHKey(host.ip, user))
 
-        # Setup apache struts vulnerabilities
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(SetupStrutsVulnerability(host.ip))
+        action = SetupServerSSHKeys(
+            self.attacker_host.ip,
+            self.attacker_host.users[0],
+            self.ring_hosts[0].ip,
+            self.ring_hosts[0].users[0],
+        )
+        self.ansible_runner.run_playbook(action)
 
-        # Setup netcat shell
-        for host in self.nc_hosts:
-            self.ansible_runner.run_playbook(SetupNetcatShell(host.ip, host.users[0]))
-
-        # Attacker host has all credentials
-        for i, host in enumerate(self.ssh_hosts):
-            action = SetupServerSSHKeys(
-                self.attacker_host.ip,
-                self.attacker_host.users[0],
-                host.ip,
-                host.users[0],
-            )
+        # Create ring of credentials
+        for i, host in enumerate(self.ring_hosts):
+            if i == len(self.ring_hosts) - 1:
+                break
+            else:
+                action = SetupServerSSHKeys(
+                    host.ip,
+                    host.users[0],
+                    self.ring_hosts[i + 1].ip,
+                    self.ring_hosts[i + 1].users[0],
+                )
             self.ansible_runner.run_playbook(action)
 
         # Add fake data to each host
-        for host in self.star_hosts:
+        for host in self.network.get_all_hosts():
             self.ansible_runner.run_playbook(
-                AddData(host.ip, host.users[0], f"~/data_{host.name}.json")
+                AddData(host.ip, "root", f"~/data_{host.name}.json")
             )

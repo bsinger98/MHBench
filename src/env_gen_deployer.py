@@ -4,7 +4,7 @@ from src.openstack.manage_network_deployer import OpenstackManageNetworkDeployer
 from src.openstack.attacker_network_deployer import (
     OpenstackAttackerNetworkDeployer,
 )
-from src.environment import find_manage_server
+from src.terraform_deployer import find_manage_server
 from openstack.connection import Connection
 from src.openstack.ansible_host_builder import OpenstackAnsibleHostBuilder
 from config.config import Config
@@ -16,7 +16,7 @@ from src.openstack.imager import OpenstackImager
 from src.openstack.cleaner import OpenstackCleaner
 
 
-class OpenstackEnvOrchestrator:
+class EnvGenDeployer:
     """Orchestrator for OpenStack environment."""
 
     def __init__(
