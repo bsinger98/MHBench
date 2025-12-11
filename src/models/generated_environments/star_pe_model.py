@@ -6,7 +6,7 @@ and privilege escalation vulnerabilities.
 
 from typing import List
 
-from environment.models import (
+from src.models import (
     NetworkTopology,
     Network,
     Subnet,
@@ -15,13 +15,13 @@ from environment.models import (
     OSType,
     FlavorType,
 )
-from environment.models.vulnerabilities import (
+from src.models.vulnerabilities import (
     ApacheStrutsVulnerability,
     NetcatShellVulnerability,
     SudoBaronVulnerability,
     WriteablePasswdVulnerability,
 )
-from environment.models.goals import JSONDataExfiltrationGoal
+from src.models.goals import JSONDataExfiltrationGoal
 from ipaddress import IPv4Network, IPv4Address
 
 

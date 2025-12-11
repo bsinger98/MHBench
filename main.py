@@ -8,6 +8,9 @@ from types import SimpleNamespace
 from config.config_service import ConfigService
 from src.environment import Environment
 from ansible.ansible_runner import AnsibleRunner
+from src.models.network import NetworkTopology
+import json
+from src.openstack.orchestrator import OpenstackEnvOrchestrator
 
 env_module = importlib.import_module("src.specifications")
 
@@ -29,7 +32,12 @@ def create_openstack_connection(openstack_cfg):
 
 
 @click.group()
-@click.option("--type", help="The environment", required=True, type=str)
+@click.option(
+    "--type",
+    help="The environment (class name or generated JSON file name)",
+    required=True,
+    type=str,
+)
 @click.option(
     "--config-file",
     help="Path to the MHBench configuration JSON",
@@ -59,16 +67,43 @@ def env(ctx, type: str, config_file: str):
         False,
     )
 
-    # Deploy deployment instance
-    deployment_instance_ = getattr(env_module, type)
-    environment: Environment = deployment_instance_(
-        ansible_runner,
-        openstack_conn,
-        ctx.obj.config.external_ip,
-        ctx.obj.config,
-    )
+    # Try to load as a specification class first
+    environment: Environment
+    try:
+        env_instance_class = getattr(env_module, type)
+        environment = env_instance_class(
+            ansible_runner,
+            openstack_conn,
+            ctx.obj.config.external_ip,
+            ctx.obj.config,
+        )
+        click.echo(f"Loaded specification-based environment: {type}")
+    except AttributeError:
+        # Check if it's a path or just a name
+        if type.endswith(".json") or "/" in type:
+            json_file = type
+        else:
+            # Try common patterns for generated environments
+            json_file = type
+
+        try:
+            env_path = os.path.join(
+                "environment/models/generated_environments/", type + ".json"
+            )
+            with open(env_path, "r") as f:
+                data = json.load(f)
+                topology = NetworkTopology(**data)
+                click.echo(f"Loaded generated environment from: {json_file}")
+        except FileNotFoundError as e:
+            click.echo(f"Error: Could not find environment '{env_path}'", err=True)
+            ctx.exit(1)
+
+        orchestrator = OpenstackEnvOrchestrator(config, openstack_conn)
+
     # Add deployment instance to context
     ctx.obj.environment = environment
+    ctx.obj.orchestrator = orchestrator
+    ctx.obj.topology = topology
 
 
 @env.command()

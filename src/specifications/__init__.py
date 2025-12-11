@@ -11,6 +11,26 @@ from .dumbbell_pe import DumbbellPE
 from .enterprise_a import EnterpriseA
 from .enterprise_b import EnterpriseB
 from .chain_2hosts import Chain2Hosts
+from .generated import GeneratedEnvironment
 
 from .dev.dev import DevEnvironment
 from .dev.priv_test import DevPrivTestEnvironment
+
+__all__ = [
+    "EquifaxLarge",
+    "EquifaxMedium",
+    "EquifaxSmall",
+    "ICSEnvironment",
+    "ChainEnvironment",
+    "PEChainEnvironment",
+    "Star",
+    "StarPE",
+    "Dumbbell",
+    "DumbbellPE",
+    "EnterpriseA",
+    "EnterpriseB",
+    "Chain2Hosts",
+    "GeneratedEnvironment",
+    "DevEnvironment",
+    "DevPrivTestEnvironment",
+]
