@@ -1,5 +1,6 @@
 from openstack.connection import Connection
 from src.utility.logging import get_logger
+from typing import Any, cast
 
 logger = get_logger()
 
@@ -35,10 +36,12 @@ class OpenstackImager:
 
     def _save_snapshot(self, host):
         snapshot_name = get_image_name(host.name)
-        image = self.openstack_conn.get_image(snapshot_name)
-        if image:
+        # NOTE: `get_image()` expects an ID; use find_image(name) for name-based lookup.
+        compute = cast(Any, self.openstack_conn.compute)
+        existing = compute.find_image(snapshot_name)
+        if existing:
             logger.debug(f"Image '{snapshot_name}' already exists. Deleting...")
-            self.openstack_conn.delete_image(image.id, wait=True)  # type: ignore
+            self.openstack_conn.delete_image(existing.id, wait=True)  # type: ignore
 
         logger.debug(f"Creating snapshot {snapshot_name} for instance {host.id}...")
         image = self.openstack_conn.create_image_snapshot(

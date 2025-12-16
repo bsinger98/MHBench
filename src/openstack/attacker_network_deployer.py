@@ -213,9 +213,11 @@ class OpenstackAttackerNetworkDeployer:
         # Get image for Kali Linux
         if use_base_image:
             image = self.compute_service.find_image(self.attacker_host_image_name)
+            print(f"Found image: {image.name}")
         else:
             image_name = get_image_name(self.attacker_host_name)
             image = self.compute_service.find_image(image_name)
+            print(f"Found image 2: {image.name}")
         if not image:
             raise Exception(f"{self.attacker_host_image_name} image not found")
 

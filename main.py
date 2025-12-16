@@ -69,7 +69,9 @@ def env(ctx, type: str, config_file: str):
     )
 
     # Try to load as a specification class first
-    environment: TerraformDeployer
+    environment: TerraformDeployer | None = None
+    topology: NetworkTopology | None = None
+    orchestrator: EnvGenDeployer | None = None
     try:
         env_instance_class = getattr(env_module, type)
         environment = env_instance_class(
@@ -88,9 +90,7 @@ def env(ctx, type: str, config_file: str):
             json_file = type
 
         try:
-            env_path = os.path.join(
-                "environment/models/generated_environments/", type + ".json"
-            )
+            env_path = os.path.join("src/environments/generated/", type + ".json")
             with open(env_path, "r") as f:
                 data = json.load(f)
                 topology = NetworkTopology(**data)
@@ -101,10 +101,9 @@ def env(ctx, type: str, config_file: str):
 
         orchestrator = EnvGenDeployer(config, openstack_conn)
 
-    # Add deployment instance to context
     ctx.obj.environment = environment
-    # ctx.obj.orchestrator = orchestrator
-    # ctx.obj.topology = topology
+    ctx.obj.orchestrator = orchestrator
+    ctx.obj.topology = topology
 
 
 @env.command()
@@ -129,14 +128,20 @@ def setup(ctx, skip_network: bool):
 @click.option("--skip_host", help="Skip host setup", is_flag=True)
 def compile(ctx, skip_network: bool, skip_host: bool):
     click.echo("Compiling the environment (can take several hours)...")
-    ctx.obj.environment.compile(not skip_network, not skip_host)
+    if ctx.obj.environment is not None:
+        ctx.obj.environment.compile(not skip_network, not skip_host)
+    else:
+        ctx.obj.orchestrator.compile_environment(ctx.obj.topology)
 
 
 @env.command()
 @click.pass_context
 def teardown(ctx):
     click.echo("Tearing down the environment...")
-    ctx.obj.environment.teardown()
+    if ctx.obj.environment is not None:
+        ctx.obj.environment.teardown()
+    else:
+        ctx.obj.orchestrator.cleaner.clean_environment()
     click.echo("Environment has been torn down")
 
 
@@ -144,7 +149,10 @@ def teardown(ctx):
 @click.pass_context
 def deploy_network(ctx):
     click.echo("Setting up network...")
-    ctx.obj.environment.deploy_topology()
+    if ctx.obj.environment is not None:
+        ctx.obj.environment.deploy_topology()
+    else:
+        ctx.obj.orchestrator.deploy_environment(ctx.obj.topology)
 
 
 if __name__ == "__main__":

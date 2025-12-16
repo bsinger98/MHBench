@@ -32,12 +32,17 @@ def delete_floating_ips(conn):
 # Delete routers
 def delete_routers(conn):
     for router in conn.list_routers():
-
         # First, detach all router interfaces
         for port in conn.list_ports():
             if port.device_owner == "network:router_interface":
                 subnet_id = port.fixed_ips[0]["subnet_id"]
-                conn.remove_router_interface(router, subnet_id=subnet_id)
+                try:
+                    conn.remove_router_interface(router, subnet_id=subnet_id)
+                except SDKException:
+                    print(
+                        f"Error removing router interface {subnet_id} from router {router.id}"
+                    )
+                    continue
 
         # Finally, delete the router
         conn.delete_router(router.id)
