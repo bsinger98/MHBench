@@ -14,3 +14,21 @@ from .chain_2hosts import Chain2Hosts
 
 from .dev.dev import DevEnvironment
 from .dev.priv_test import DevPrivTestEnvironment
+
+__all__ = [
+    "EquifaxLarge",
+    "EquifaxMedium",
+    "EquifaxSmall",
+    "ICSEnvironment",
+    "ChainEnvironment",
+    "PEChainEnvironment",
+    "Star",
+    "StarPE",
+    "Dumbbell",
+    "DumbbellPE",
+    "EnterpriseA",
+    "EnterpriseB",
+    "Chain2Hosts",
+    "DevEnvironment",
+    "DevPrivTestEnvironment",
+]

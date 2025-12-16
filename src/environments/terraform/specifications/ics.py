@@ -11,7 +11,7 @@ from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupNetcatShell
 from ansible.caldera import InstallAttacker
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -25,7 +25,7 @@ fake = Faker()
 NUMBER_ICS_HOSTS = 47
 
 
-class ICSEnvironment(Environment):
+class ICSEnvironment(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,

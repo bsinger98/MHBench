@@ -13,13 +13,13 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from environment.models.vulnerabilities import Vulnerability, MergeStrategy
-from environment.models.attack_paths import (
+from src.models.vulnerabilities import Vulnerability, MergeStrategy
+from src.models.attack_paths import (
     AttackPath,
     LateralMovementStep,
     PrivilegeEscalationStep,
 )
-from environment.models.goals import Goal
+from src.models.goals import Goal
 
 
 class AttackGraphNode(BaseModel):

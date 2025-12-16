@@ -1,37 +1,35 @@
-import time
 from src.utility.logging import log_event
 
 from ansible.ansible_runner import AnsibleRunner
 
 from ansible.deployment_instance import (
-    CheckIfHostUp,
     SetupServerSSHKeys,
     CreateSSHKey,
 )
 from ansible.common import CreateUser
 from ansible.vulnerabilities import SetupStrutsVulnerability
 from ansible.goals import AddData
-from src.environment import Environment
+
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
 from config.config import Config
 
 from faker import Faker
-import random
 
 fake = Faker()
 
 
-class EquifaxInstance(Environment):
+class Dumbbell(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,
         openstack_conn,
         caldera_ip,
         config: Config,
-        topology="equifax_small",
-        number_of_hosts=12,
+        topology="dumbbell",
+        number_of_hosts=30,
     ):
         super().__init__(ansible_runner, openstack_conn, caldera_ip, config)
         self.topology = topology
@@ -50,13 +48,6 @@ class EquifaxInstance(Environment):
             self.openstack_conn, "192.168.202.0/24", host_name_prefix="attacker"
         )[0]
 
-        self.employee_hosts = get_hosts_on_subnet(
-            self.openstack_conn, "192.168.201.0/24", host_name_prefix="employee"
-        )
-        for host in self.employee_hosts:
-            username = host.name.replace("_", "")
-            host.users.append(username)
-
         self.database_hosts = get_hosts_on_subnet(
             self.openstack_conn, "192.168.201.0/24", host_name_prefix="database"
         )
@@ -67,7 +58,7 @@ class EquifaxInstance(Environment):
         webserverSubnet = Subnet("webserver_network", self.webservers, "webserver")
         corportateSubnet = Subnet(
             "critical_company_network",
-            self.employee_hosts + self.database_hosts,
+            self.database_hosts,
             "critical_company",
         )
 
@@ -83,37 +74,27 @@ class EquifaxInstance(Environment):
         self.find_management_server()
         self.parse_network()
 
-        self.ansible_runner.run_playbook(CheckIfHostUp(self.webservers[0].ip))
-        time.sleep(3)
-
-        # Setup apache struts and vulnerabiity
+        # Setup apache struts and vulnerability
         webserver_ips = [host.ip for host in self.webservers]
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
         # Setup users on corporte hosts
-        for host in self.employee_hosts + self.database_hosts:
+        for host in self.network.get_all_hosts():
             for user in host.users:
                 self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+
         for host in self.webservers:
             self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
 
-        # Choose a random webserver to setup SSH keys to all databases and employees
-        webserver_with_creds = random.choice(self.webservers)
-        for employee in self.employee_hosts:
+        for i, webserver in enumerate(self.webservers):
+            database = self.database_hosts[i]
             self.ansible_runner.run_playbook(
                 SetupServerSSHKeys(
-                    webserver_with_creds.ip, "tomcat", employee.ip, employee.users[0]
-                )
-            )
-        for database in self.database_hosts:
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver_with_creds.ip, "tomcat", database.ip, database.users[0]
+                    webserver.ip, webserver.users[0], database.ip, database.users[0]
                 )
             )
 
         # Add data to database hosts
-        i = 0
         for database in self.database_hosts:
             self.ansible_runner.run_playbook(
                 AddData(database.ip, database.users[0], f"~/data_{database.name}.json")

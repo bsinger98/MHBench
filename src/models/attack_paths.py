@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from typing import List, Union, Optional
 from pydantic import BaseModel, Field, field_validator
 
-from environment.models.vulnerabilities import (
+from src.models.vulnerabilities import (
     LateralMovementVulnerability,
     PrivilegeEscalationVulnerability,
 )

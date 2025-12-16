@@ -14,7 +14,7 @@ from .enums import OSType, FlavorType, ProtocolType
 from .components import User, create_default_root_user
 from .goals import GoalUnion
 from .vulnerabilities import Vulnerability
-from environment.models.attack_paths import AttackPath
+from src.models.attack_paths import AttackPath
 from .attack_graph import AttackGraph
 
 

@@ -17,7 +17,7 @@ from ansible.vulnerabilities import (
 )
 from ansible.goals import AddData
 
-from src.environment import Environment
+from src.terraform_deployer import TerraformDeployer
 from src.legacy_models import Network, Subnet
 from src.utility.openstack_processor import get_hosts_on_subnet
 
@@ -26,7 +26,7 @@ from config.config import Config
 NUMBER_RING_HOSTS = 5
 
 
-class DevEnvironment(Environment):
+class DevEnvironment(TerraformDeployer):
     def __init__(
         self,
         ansible_runner: AnsibleRunner,
