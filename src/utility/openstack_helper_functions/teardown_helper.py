@@ -4,21 +4,26 @@ import openstack
 from openstack.exceptions import SDKException
 
 
+def _delete_single_instance(conn, server):
+    current_sgs = server.security_groups
+    if current_sgs:
+        for sg in current_sgs:
+            sg_name = sg.get("id")
+            if sg_name:
+                conn.remove_server_security_groups(server, sg_name)
+    conn.delete_server(server.id)
+
+
 # Deleting instances
 def delete_instances(conn):
     servers = conn.list_servers()
-    for server in servers:
-        current_sgs = server.security_groups
-
-        if current_sgs:
-            # Remove each security group from the server
-            for sg in current_sgs:
-                # Debug the structure of each security group object
-                sg_name = sg.get("id")
-                if sg_name:
-                    conn.remove_server_security_groups(server, sg_name)
-
-        conn.delete_server(server.id)
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(_delete_single_instance, conn, server) for server in servers]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except SDKException:
+                pass
 
 
 # Deleting floating ips

@@ -67,34 +67,35 @@ class ChainEnvironment(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.ring_hosts[0].ip))
         time.sleep(3)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        action = SetupServerSSHKeys(
-            self.attacker_host.ip,
-            self.attacker_host.users[0],
-            self.ring_hosts[0].ip,
-            self.ring_hosts[0].users[0],
-        )
-        self.ansible_runner.run_playbook(action)
-
-        # Create ring of credentials
-        for i, host in enumerate(self.ring_hosts):
-            if i == len(self.ring_hosts) - 1:
-                break
-            else:
-                action = SetupServerSSHKeys(
-                    host.ip,
-                    host.users[0],
-                    self.ring_hosts[i + 1].ip,
-                    self.ring_hosts[i + 1].users[0],
-                )
-            self.ansible_runner.run_playbook(action)
-
-        # Add fake data to each host
-        for host in self.network.get_all_hosts():
-            self.ansible_runner.run_playbook(
-                AddData(host.ip, host.users[0], f"~/data_{host.name}.json")
+        # Phase B: set up attacker→first host credential (single, must precede chain)
+        self.ansible_runner.run_playbook(
+            SetupServerSSHKeys(
+                self.attacker_host.ip,
+                self.attacker_host.users[0],
+                self.ring_hosts[0].ip,
+                self.ring_hosts[0].users[0],
             )
+        )
+
+        # Phase C: chain credentials and data in parallel (all independent pairs)
+        chain_and_data_playbooks = [
+            SetupServerSSHKeys(
+                self.ring_hosts[i].ip,
+                self.ring_hosts[i].users[0],
+                self.ring_hosts[i + 1].ip,
+                self.ring_hosts[i + 1].users[0],
+            )
+            for i in range(len(self.ring_hosts) - 1)
+        ] + [
+            AddData(host.ip, host.users[0], f"~/data_{host.name}.json")
+            for host in self.network.get_all_hosts()
+        ]
+        self.ansible_runner.run_playbooks(chain_and_data_playbooks)

@@ -99,41 +99,35 @@ class ICSEnvironment(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.employee_one_hosts[0].ip))
         time.sleep(3)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        # Random employee on subnet one
-        for manage_host in self.manage_hosts:
-            # Setup netcat shell on vulnerable employee
-            self.ansible_runner.run_playbook(
-                SetupNetcatShell(manage_host.ip, manage_host.users[0])
-            )
-
-            # Each employee has SSH keys to all ot sensors
-            for sensor in self.ot_sensors:
-                self.ansible_runner.run_playbook(
-                    SetupServerSSHKeys(
-                        manage_host.ip,
-                        manage_host.users[0],
-                        sensor.ip,
-                        sensor.users[0],
-                    )
-                )
-
-        # Randomly choose 5 OT sensors to have ssh keys to ot hosts
+        # Phase B: all credential setup is independent — run in parallel
         critical_sensors = random.sample(self.ot_sensors, 5)
-        for i, ot_host in enumerate(self.ot_hosts):
-            sensor = critical_sensors[i]
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    sensor.ip,
-                    sensor.users[0],
-                    ot_host.ip,
-                    ot_host.users[0],
-                )
+        phase_b_playbooks = [
+            SetupNetcatShell(manage_host.ip, manage_host.users[0])
+            for manage_host in self.manage_hosts
+        ] + [
+            SetupServerSSHKeys(
+                manage_host.ip, manage_host.users[0], sensor.ip, sensor.users[0]
             )
+            for manage_host in self.manage_hosts
+            for sensor in self.ot_sensors
+        ] + [
+            SetupServerSSHKeys(
+                critical_sensors[i].ip,
+                critical_sensors[i].users[0],
+                ot_host.ip,
+                ot_host.users[0],
+            )
+            for i, ot_host in enumerate(self.ot_hosts)
+        ]
+        self.ansible_runner.run_playbooks(phase_b_playbooks)
 
     def runtime_setup(self):
         # Randomly choose 1 employee to have attacker

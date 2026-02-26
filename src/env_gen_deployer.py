@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from src.openstack.network_deployer import OpenstackNetworkDeployer
 from src.openstack.host_deployer import OpenstackHostDeployer
 from src.openstack.manage_network_deployer import OpenstackManageNetworkDeployer
@@ -52,8 +54,15 @@ class EnvGenDeployer:
         self.cleaner.clean_environment()
 
         self.deploy_network(topology)
-        self.deploy_management_network()
-        self.deploy_attacker_network()
+
+        # Management and attacker networks are independent — deploy in parallel
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(self.deploy_management_network),
+                executor.submit(self.deploy_attacker_network),
+            ]
+            for f in as_completed(futures):
+                f.result()
 
         # Deploy and setup hosts
         self.deploy_hosts(topology, use_base_image=True)

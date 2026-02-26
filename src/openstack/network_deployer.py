@@ -7,6 +7,7 @@ each subnet as a separate OpenStack network as requested.
 """
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, cast
 
 import openstack.connection
@@ -68,19 +69,20 @@ class OpenstackNetworkDeployer:
 
         """
 
-        for subnet in network.subnets:
-            os_network = self._create_openstack_network(
-                name=f"{subnet.name}",
-                description=f"Network for {subnet.name} (CIDR: {subnet.cidr})",
-                cidr=str(subnet.cidr),
-            )
-
-            # Track the created network for routing
-            self.created_networks.append(os_network)
-
-            self.logger.info(
-                f"Created OpenStack network: {os_network.name} for subnet: {subnet.name}"
-            )
+        with ThreadPoolExecutor(max_workers=max(len(network.subnets), 1)) as executor:
+            futures = [
+                executor.submit(
+                    self._create_openstack_network,
+                    name=subnet.name,
+                    description=f"Network for {subnet.name} (CIDR: {subnet.cidr})",
+                    cidr=str(subnet.cidr),
+                )
+                for subnet in network.subnets
+            ]
+            for future in as_completed(futures):
+                os_network = future.result()
+                self.created_networks.append(os_network)
+                self.logger.info(f"Created OpenStack network: {os_network.name}")
 
     def _create_openstack_network(
         self, name: str, description: str = "", cidr: str = ""
@@ -134,9 +136,14 @@ class OpenstackNetworkDeployer:
         # Get all subnets in the topology
         all_subnets = topology.get_all_subnets()
 
-        # Create a security group for each subnet
-        for subnet in all_subnets:
-            self._create_subnet_security_group(subnet, topology)
+        # Create a security group for each subnet in parallel
+        with ThreadPoolExecutor(max_workers=min(len(all_subnets), 20)) as executor:
+            futures = [
+                executor.submit(self._create_subnet_security_group, subnet, topology)
+                for subnet in all_subnets
+            ]
+            for future in as_completed(futures):
+                future.result()
 
     def _create_subnet_security_group(
         self, subnet: Subnet, topology: NetworkTopology
@@ -182,81 +189,94 @@ class OpenstackNetworkDeployer:
         """
         Create a simple TCP rule allowing all ports from source subnet.
         """
-        # Create ingress rule
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="ingress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix=str(source_subnet.cidr),
-        )
-
-        # Create egress rule
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="egress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix=str(source_subnet.cidr),
-        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="ingress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix=str(source_subnet.cidr),
+                ),
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="egress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix=str(source_subnet.cidr),
+                ),
+            ]
+            for f in as_completed(futures):
+                f.result()
 
     def _create_internal_subnet_rules(self, sg_id: str, subnet: Subnet) -> None:
         """
         Create rules to allow internal TCP communication within the same subnet.
         """
-
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="ingress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix=str(subnet.cidr),
-        )
-
-        # Allow all SSH traffic
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="ingress",
-            protocol="tcp",
-            port_range_min=22,
-            port_range_max=22,
-            remote_ip_prefix="0.0.0.0/0",
-        )
-
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="egress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix=str(subnet.cidr),
-        )
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = [
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="ingress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix=str(subnet.cidr),
+                ),
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="ingress",
+                    protocol="tcp",
+                    port_range_min=22,
+                    port_range_max=22,
+                    remote_ip_prefix="0.0.0.0/0",
+                ),
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="egress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix=str(subnet.cidr),
+                ),
+            ]
+            for f in as_completed(futures):
+                f.result()
 
     def _create_external_subnet_rules(self, sg_id: str) -> None:
         """
         Create rules to allow all traffic from external subnet.
         """
-
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="egress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix="0.0.0.0/0",
-        )
-
-        self.network_service.create_security_group_rule(
-            security_group_id=sg_id,
-            direction="ingress",
-            protocol="tcp",
-            port_range_min=1,
-            port_range_max=65535,
-            remote_ip_prefix="0.0.0.0/0",
-        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="egress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix="0.0.0.0/0",
+                ),
+                executor.submit(
+                    self.network_service.create_security_group_rule,
+                    security_group_id=sg_id,
+                    direction="ingress",
+                    protocol="tcp",
+                    port_range_min=1,
+                    port_range_max=65535,
+                    remote_ip_prefix="0.0.0.0/0",
+                ),
+            ]
+            for f in as_completed(futures):
+                f.result()
 
     def _setup_routing(self) -> None:
         """

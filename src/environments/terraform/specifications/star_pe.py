@@ -84,41 +84,34 @@ class StarPE(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        # Setup privilege escalation vulnerabilities on all hosts
-        for i in range(0, len(self.star_hosts), 2):
-            self.ansible_runner.run_playbook(SetupSudoBaron(self.star_hosts[i].ip))
-        for i in range(1, len(self.star_hosts), 2):
-            self.ansible_runner.run_playbook(
-                SetupWriteablePasswd(self.star_hosts[i].ip)
+        # Phase B: all remaining setup is independent — run in parallel
+        phase_b_playbooks = [
+            CreateSSHKey(host.ip, host.users[0]) for host in self.webservers
+        ] + [
+            SetupSudoBaron(self.star_hosts[i].ip)
+            for i in range(0, len(self.star_hosts), 2)
+        ] + [
+            SetupWriteablePasswd(self.star_hosts[i].ip)
+            for i in range(1, len(self.star_hosts), 2)
+        ] + [
+            SetupStrutsVulnerability(host.ip) for host in self.webservers
+        ] + [
+            SetupNetcatShell(host.ip, host.users[0]) for host in self.nc_hosts
+        ] + [
+            SetupServerSSHKeys(
+                self.attacker_host.ip, self.attacker_host.users[0], host.ip, host.users[0]
             )
-
-        # Setup apache struts vulnerabilities
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(SetupStrutsVulnerability(host.ip))
-
-        # Setup netcat shell
-        for host in self.nc_hosts:
-            self.ansible_runner.run_playbook(SetupNetcatShell(host.ip, host.users[0]))
-
-        # Attacker host has all credentials
-        for i, host in enumerate(self.ssh_hosts):
-            action = SetupServerSSHKeys(
-                self.attacker_host.ip,
-                self.attacker_host.users[0],
-                host.ip,
-                host.users[0],
-            )
-            self.ansible_runner.run_playbook(action)
-
-        # Add fake data to each host
-        for host in self.star_hosts:
-            self.ansible_runner.run_playbook(
-                AddData(host.ip, "root", f"~/data_{host.name}.json")
-            )
+            for host in self.ssh_hosts
+        ] + [
+            AddData(host.ip, "root", f"~/data_{host.name}.json")
+            for host in self.star_hosts
+        ]
+        self.ansible_runner.run_playbooks(phase_b_playbooks)

@@ -94,21 +94,23 @@ class Enterprise(TerraformDeployer):
         webserver_ips = [host.ip for host in self.branch_one]
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
-        # Setup users on corporte hosts
-        for host in self.branch_two + self.branch_three + self.branch_four:
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.branch_two + self.branch_three + self.branch_four
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
+        # Phase B: distribute credentials and add data in parallel
         webserver_with_creds = random.choice(self.branch_one)
-        for employee in self.branch_three + self.branch_four:
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver_with_creds.ip, "tomcat", employee.ip, employee.users[0]
-                )
+        cred_and_data_playbooks = [
+            SetupServerSSHKeys(
+                webserver_with_creds.ip, "tomcat", employee.ip, employee.users[0]
             )
-
-        # Add data to database hosts
-        for database in self.branch_three + self.branch_four:
-            self.ansible_runner.run_playbook(
-                AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
-            )
+            for employee in self.branch_three + self.branch_four
+        ] + [
+            AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+            for database in self.branch_three + self.branch_four
+        ]
+        self.ansible_runner.run_playbooks(cred_and_data_playbooks)

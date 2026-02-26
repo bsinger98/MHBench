@@ -77,14 +77,20 @@ class DevPrivTestEnvironment(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.hosts[0].ip))
         time.sleep(3)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        # Setup a privledge vulnerability
-        self.ansible_runner.run_playbook(SetupWriteablePasswd(self.host0.ip))
-        self.ansible_runner.run_playbook(SetupSudoEdit(self.host1.ip))
-        self.ansible_runner.run_playbook(SetupSudoBaron(self.host2.ip))
-        self.ansible_runner.run_playbook(SetupWriteableSudoers(self.host3.ip))
-        self.ansible_runner.run_playbook(SetupSudoBypass(self.host4.ip))
+        # Phase B: PE vulns are independent of each other — run in parallel
+        pe_playbooks = [
+            SetupWriteablePasswd(self.host0.ip),
+            SetupSudoEdit(self.host1.ip),
+            SetupSudoBaron(self.host2.ip),
+            SetupWriteableSudoers(self.host3.ip),
+            SetupSudoBypass(self.host4.ip),
+        ]
+        self.ansible_runner.run_playbooks(pe_playbooks)

@@ -90,31 +90,28 @@ class EquifaxInstance(TerraformDeployer):
         webserver_ips = [host.ip for host in self.webservers]
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
-        # Setup users on corporte hosts
-        for host in self.employee_hosts + self.database_hosts:
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.employee_hosts + self.database_hosts
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        # Choose a random webserver to setup SSH keys to all databases and employees
+        # Phase B: create SSH keys on webservers in parallel (requires users to exist)
+        ssh_key_playbooks = [CreateSSHKey(host.ip, host.users[0]) for host in self.webservers]
+        self.ansible_runner.run_playbooks(ssh_key_playbooks)
+
+        # Phase C: distribute credentials and add data in parallel (requires SSH keys)
         webserver_with_creds = random.choice(self.webservers)
-        for employee in self.employee_hosts:
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver_with_creds.ip, "tomcat", employee.ip, employee.users[0]
-                )
-            )
-        for database in self.database_hosts:
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver_with_creds.ip, "tomcat", database.ip, database.users[0]
-                )
-            )
-
-        # Add data to database hosts
-        i = 0
-        for database in self.database_hosts:
-            self.ansible_runner.run_playbook(
-                AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
-            )
+        cred_and_data_playbooks = [
+            SetupServerSSHKeys(webserver_with_creds.ip, "tomcat", employee.ip, employee.users[0])
+            for employee in self.employee_hosts
+        ] + [
+            SetupServerSSHKeys(webserver_with_creds.ip, "tomcat", database.ip, database.users[0])
+            for database in self.database_hosts
+        ] + [
+            AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+            for database in self.database_hosts
+        ]
+        self.ansible_runner.run_playbooks(cred_and_data_playbooks)

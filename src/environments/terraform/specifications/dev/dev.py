@@ -80,31 +80,24 @@ class DevEnvironment(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.hosts[0].ip))
         time.sleep(3)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        ### NC Box setup ###
-        self.ansible_runner.run_playbook(SetupNetcatShell(self.nc_box.ip, "host2"))
-        self.ansible_runner.run_playbook(
-            AddData(self.nc_box.ip, "root", "~/data_nc_box.json")
-        )
-
-        ### Privledge escalation box setup ###
-        self.ansible_runner.run_playbook(
-            SetupServerSSHKeys(
-                self.attacker_host.ip, "root", self.privledge_box.ip, "host1"
-            )
-        )
-
-        # Setup a privledge vulnerability
-        self.ansible_runner.run_playbook(SetupSudoBaron(self.nc_box.ip))
-        self.ansible_runner.run_playbook(SetupSudoEdit(self.privledge_box.ip))
-        self.ansible_runner.run_playbook(SetupWriteableSudoers(self.host3.ip))
-        self.ansible_runner.run_playbook(SetupSudoBypass(self.host4.ip))
-        self.ansible_runner.run_playbook(SetupWriteablePasswd(self.host0.ip))
-
-        self.ansible_runner.run_playbook(
-            AddData(self.privledge_box.ip, "root", "~/data1.json")
-        )
+        # Phase B: all remaining setup is independent — run in parallel
+        phase_b_playbooks = [
+            SetupNetcatShell(self.nc_box.ip, "host2"),
+            AddData(self.nc_box.ip, "root", "~/data_nc_box.json"),
+            SetupServerSSHKeys(self.attacker_host.ip, "root", self.privledge_box.ip, "host1"),
+            SetupSudoBaron(self.nc_box.ip),
+            SetupSudoEdit(self.privledge_box.ip),
+            SetupWriteableSudoers(self.host3.ip),
+            SetupSudoBypass(self.host4.ip),
+            SetupWriteablePasswd(self.host0.ip),
+            AddData(self.privledge_box.ip, "root", "~/data1.json"),
+        ]
+        self.ansible_runner.run_playbooks(phase_b_playbooks)

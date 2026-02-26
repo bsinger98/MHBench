@@ -80,35 +80,35 @@ class DumbbellPE(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
 
-        # Setup users on corporte hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
-
-        # Setup apache struts and vulnerability
+        # Phase B: SSH keys and PE vulns are independent — run in parallel
         webserver_ips = [host.ip for host in self.webservers]
+        phase_b_playbooks = [
+            CreateSSHKey(host.ip, host.users[0]) for host in self.webservers
+        ] + [
+            SetupSudoBaron(webserver_ips[i]) if i % 2 else SetupWriteablePasswd(webserver_ips[i])
+            for i in range(len(webserver_ips))
+        ]
+        self.ansible_runner.run_playbooks(phase_b_playbooks)
+
+        # Setup apache struts and vulnerability (single call targeting all webservers)
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
-        # Setup privledge escalation vulnerabilities
-        # even hosts SetupWriteableSudoers
-        # odd hosts SetupSudoEdit
-        for i in range(len(webserver_ips)):
-            if i % 2:
-                self.ansible_runner.run_playbook(SetupSudoBaron(webserver_ips[i]))
-            else:
-                self.ansible_runner.run_playbook(SetupWriteablePasswd(webserver_ips[i]))
-
-        for i, webserver in enumerate(self.webservers):
-            database = self.database_hosts[i]
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(webserver.ip, "root", database.ip, database.users[0])
+        # Phase C: distribute credentials and add data in parallel (requires SSH keys)
+        cred_and_data_playbooks = [
+            SetupServerSSHKeys(
+                self.webservers[i].ip, "root", self.database_hosts[i].ip, self.database_hosts[i].users[0]
             )
-
-        # Add data to database hosts
-        for database in self.database_hosts:
-            self.ansible_runner.run_playbook(
-                AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
-            )
+            for i in range(len(self.webservers))
+        ] + [
+            AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+            for database in self.database_hosts
+        ]
+        self.ansible_runner.run_playbooks(cred_and_data_playbooks)

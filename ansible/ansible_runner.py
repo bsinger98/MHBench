@@ -72,34 +72,32 @@ class AnsibleRunner:
         log_path = path.join(self.log_path, "ansible_log.log")
         with open(log_path, "a") as f:
             with redirect_stdout(f):
-                # Run max of 10 playbooks at a time
-                for i in range(0, len(playbooks), 10):
-                    threads = []
-                    runners = []
-                    for playbook in playbooks[i : i + 10]:
-                        # Merge default params with playbook specific params
-                        playbook_full_params = (
-                            self.ansible_vars_default | playbook.params
-                        )
-                        thread, runner = ansible_runner.run_async(
-                            extravars=playbook_full_params,
-                            private_data_dir=self.ansible_dir,
-                            playbook=playbook.name,
-                            quiet=False,
-                        )
-                        threads.append(thread)
-                        runners.append(runner)
+                threads = []
+                runners = []
+                for playbook in playbooks:
+                    # Merge default params with playbook specific params
+                    playbook_full_params = (
+                        self.ansible_vars_default | playbook.params
+                    )
+                    thread, runner = ansible_runner.run_async(
+                        extravars=playbook_full_params,
+                        private_data_dir=self.ansible_dir,
+                        playbook=playbook.name,
+                        quiet=False,
+                    )
+                    threads.append(thread)
+                    runners.append(runner)
 
-                    for thread in threads:
-                        thread.join()
+                for thread in threads:
+                    thread.join()
 
-                    # Check for any failed playbooks
-                    for runner in runners:
-                        if runner.status == "failed":
-                            logger.error(f"Playbook failed")
-                            logger.error(f"Playbook Output: {runner.stdout}")
-                            logger.error(f"Playbook Error: {runner.stderr}")
-                            raise Exception(f"Playbook failed")
+                # Check for any failed playbooks
+                for runner in runners:
+                    if runner.status == "failed":
+                        logger.error(f"Playbook failed")
+                        logger.error(f"Playbook Output: {runner.stdout}")
+                        logger.error(f"Playbook Error: {runner.stderr}")
+                        raise Exception(f"Playbook failed")
 
     def update_management_ip(self, new_ip):
         self.management_ip = new_ip

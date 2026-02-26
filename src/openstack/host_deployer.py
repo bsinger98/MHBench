@@ -8,6 +8,7 @@ in the network topology.
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Any, cast, Optional, Tuple
 
 import openstack.connection
@@ -47,6 +48,10 @@ class OpenstackHostDeployer:
 
         # Track created resources for cleanup
         self.created_instances: Dict[str, Any] = {}
+
+        # Cache repeated OpenStack lookups
+        self._image_cache: Dict[Any, Any] = {}
+        self._flavor_cache: Dict[Any, Any] = {}
 
         # OS to image mapping - these should match your OpenStack environment
         self.os_image_mapping = {
@@ -107,17 +112,20 @@ class OpenstackHostDeployer:
             hosts: List of Host objects to deploy
             topology: Parent topology for context
         """
-        # Create all instances without waiting for completion
+        # Submit all instance creations in parallel
         created_instances: List[Tuple[Host, Any]] = []
-
-        for host in hosts:
-            instance = self._deploy_host(
-                host, wait_for_active=False, use_base_image=use_base_image
-            )
-            created_instances.append((host, instance))
-            self.logger.info(
-                f"Submitted instance creation: {host.name} with ID: {instance.id}"
-            )
+        with ThreadPoolExecutor(max_workers=len(hosts)) as executor:
+            future_to_host = {
+                executor.submit(self._deploy_host, host, False, use_base_image): host
+                for host in hosts
+            }
+            for future in as_completed(future_to_host):
+                host = future_to_host[future]
+                instance = future.result()
+                created_instances.append((host, instance))
+                self.logger.info(
+                    f"Submitted instance creation: {host.name} with ID: {instance.id}"
+                )
 
         # Poll for all instances to become active
         self.logger.info(
@@ -283,6 +291,9 @@ class OpenstackHostDeployer:
         Raises:
             ValueError: If image not found for OS type
         """
+        if os_type in self._image_cache:
+            return self._image_cache[os_type]
+
         image_name = self.os_image_mapping.get(os_type)
         if not image_name:
             raise ValueError(f"No image mapping defined for OS type: {os_type}")
@@ -291,6 +302,7 @@ class OpenstackHostDeployer:
         if not image:
             raise ValueError(f"Image {image_name} not found in OpenStack")
 
+        self._image_cache[os_type] = image
         return image
 
     def _get_image(self, image_name: str) -> Any:
@@ -312,6 +324,9 @@ class OpenstackHostDeployer:
         Raises:
             ValueError: If flavor not found
         """
+        if flavor_type in self._flavor_cache:
+            return self._flavor_cache[flavor_type]
+
         flavor_name = self.flavor_mapping.get(flavor_type)
         if not flavor_name:
             raise ValueError(
@@ -322,6 +337,7 @@ class OpenstackHostDeployer:
         if not flavor:
             raise ValueError(f"Flavor {flavor_name} not found in OpenStack")
 
+        self._flavor_cache[flavor_type] = flavor
         return flavor
 
     def _get_security_groups_for_host(self, host: Host) -> List[Dict[str, str]]:

@@ -105,45 +105,41 @@ class EnterpriseB(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
 
-        # Setup other users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        # Setup apache struts and vulnerability
+        # Phase B: create SSH keys on webservers in parallel (requires users to exist)
+        ssh_key_playbooks = [CreateSSHKey(host.ip, host.users[0]) for host in self.webservers]
+        self.ansible_runner.run_playbooks(ssh_key_playbooks)
+
+        # Setup apache struts and vulnerability (single call targeting all webservers)
         webserver_ips = [host.ip for host in self.webservers]
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
-        # Each web server has access to a random employee host
+        # Phase C: distribute credentials, privilege escalation, and data in parallel
         random_access_hosts = random.sample(self.employee_hosts, len(self.webservers))
-        for i in range(len(self.webservers)):
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    self.webservers[i].ip,
-                    self.webservers[i].users[0],
-                    random_access_hosts[i].ip,
-                    random_access_hosts[i].users[0],
-                )
-            )
-
-        # A random employee host has access to all databases
         random_employee_host = random.choice(self.employee_hosts)
-        for db in self.databases:
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    random_employee_host.ip,
-                    "root",
-                    db.ip,
-                    db.users[0],
-                )
-            )
         employee_host_ips = [host.ip for host in self.employee_hosts]
-        self.ansible_runner.run_playbook(SetupSudoBaron(employee_host_ips))
-
-        # Add data to database hosts
-        for database in self.databases:
-            self.ansible_runner.run_playbook(
-                AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+        phase_c_playbooks = [
+            SetupServerSSHKeys(
+                self.webservers[i].ip,
+                self.webservers[i].users[0],
+                random_access_hosts[i].ip,
+                random_access_hosts[i].users[0],
             )
+            for i in range(len(self.webservers))
+        ] + [
+            SetupServerSSHKeys(random_employee_host.ip, "root", db.ip, db.users[0])
+            for db in self.databases
+        ] + [
+            SetupSudoBaron(employee_host_ips)
+        ] + [
+            AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+            for database in self.databases
+        ]
+        self.ansible_runner.run_playbooks(phase_c_playbooks)

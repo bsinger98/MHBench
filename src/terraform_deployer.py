@@ -1,4 +1,5 @@
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import openstack.compute.v2.server
 import openstack.image.v2.image
@@ -143,13 +144,11 @@ class TerraformDeployer:
         self.ansible_runner.run_playbook(InstallKaliPackages(self.attacker_host.ip))
         self.ansible_runner.run_playbook(CreateSSHKey(self.attacker_host.ip, "root"))
 
-        # Install sysflow on all hosts
-        self.ansible_runner.run_playbook(
-            InstallSysFlow(self.network.get_all_host_ips(), self.config)
-        )
-        self.ansible_runner.run_playbook(
-            InstallFalco(self.network.get_all_host_ips(), self.config)
-        )
+        # Install sysflow and falco on all hosts in parallel (independent)
+        self.ansible_runner.run_playbooks([
+            InstallSysFlow(self.network.get_all_host_ips(), self.config),
+            InstallFalco(self.network.get_all_host_ips(), self.config),
+        ])
 
     def setup(self):
         self.find_management_server()
@@ -205,17 +204,19 @@ class TerraformDeployer:
 
     def save_all_snapshots(self, wait=True):
         logger.debug("Saving all snapshots...")
-        images = []
-        for instance in self.openstack_conn.list_servers():
-            image = self.save_snapshot(instance)
-            images.append(image)
+        instances = list(self.openstack_conn.list_servers())
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(self.save_snapshot, inst): inst for inst in instances}
+            for future in as_completed(futures):
+                future.result()
 
     def clean_snapshots(self):
         logger.debug("Cleaning all snapshots...")
-        images = self.openstack_conn.list_images()
-        for image in images:
-            if "_image" in image.name:
-                self.openstack_conn.delete_image(image.id, wait=True)
+        images = [img for img in self.openstack_conn.list_images() if "_image" in img.name]
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(self.openstack_conn.delete_image, img.id, True) for img in images]
+            for future in as_completed(futures):
+                future.result()
 
     def load_all_snapshots(self, wait=True):
         logger.debug("Loading all snapshots...")

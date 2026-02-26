@@ -69,47 +69,51 @@ class PEChainEnvironment(TerraformDeployer):
         self.ansible_runner.run_playbook(CheckIfHostUp(self.attacker_host.ip))
         time.sleep(3)
 
-        # Setup privledge escalation vulnerabilities
-        # even hosts SetupWriteableSudoers
-        # odd hosts SetupSudoEdit
+        # Phase A: PE vulns are independent of user creation — run in parallel
         ring_host_ips = [host.ip for host in self.ring_hosts]
-        for i in range(len(ring_host_ips)):
-            if i % 2:
-                self.ansible_runner.run_playbook(SetupSudoBaron(ring_host_ips[i]))
-            else:
-                self.ansible_runner.run_playbook(SetupWriteablePasswd(ring_host_ips[i]))
+        pe_playbooks = [
+            SetupSudoBaron(ring_host_ips[i]) if i % 2 else SetupWriteablePasswd(ring_host_ips[i])
+            for i in range(len(ring_host_ips))
+        ]
+        self.ansible_runner.run_playbooks(pe_playbooks)
 
-        # Setup users on all hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(
-                    CreateUser(host.ip, user, "ubuntu", "ubuntu")
-                )
-                self.ansible_runner.run_playbook(CreateSSHKey(host.ip, user))
+        # Phase B1: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu", "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        action = SetupServerSSHKeys(
-            self.attacker_host.ip,
-            self.attacker_host.users[0],
-            self.ring_hosts[0].ip,
-            self.ring_hosts[0].users[0],
-        )
-        self.ansible_runner.run_playbook(action)
+        # Phase B2: create SSH keys in parallel (requires users to exist)
+        key_playbooks = [
+            CreateSSHKey(host.ip, user)
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(key_playbooks)
 
-        # Create ring of credentials
-        for i, host in enumerate(self.ring_hosts):
-            if i == len(self.ring_hosts) - 1:
-                break
-            else:
-                action = SetupServerSSHKeys(
-                    host.ip,
-                    host.users[0],
-                    self.ring_hosts[i + 1].ip,
-                    self.ring_hosts[i + 1].users[0],
-                )
-            self.ansible_runner.run_playbook(action)
-
-        # Add fake data to each host
-        for host in self.network.get_all_hosts():
-            self.ansible_runner.run_playbook(
-                AddData(host.ip, "root", f"~/data_{host.name}.json")
+        # Phase C: set up attacker→first host credential (single, must precede chain)
+        self.ansible_runner.run_playbook(
+            SetupServerSSHKeys(
+                self.attacker_host.ip,
+                self.attacker_host.users[0],
+                self.ring_hosts[0].ip,
+                self.ring_hosts[0].users[0],
             )
+        )
+
+        # Phase D: chain credentials and data in parallel (all independent)
+        chain_and_data_playbooks = [
+            SetupServerSSHKeys(
+                self.ring_hosts[i].ip,
+                self.ring_hosts[i].users[0],
+                self.ring_hosts[i + 1].ip,
+                self.ring_hosts[i + 1].users[0],
+            )
+            for i in range(len(self.ring_hosts) - 1)
+        ] + [
+            AddData(host.ip, "root", f"~/data_{host.name}.json")
+            for host in self.network.get_all_hosts()
+        ]
+        self.ansible_runner.run_playbooks(chain_and_data_playbooks)

@@ -78,24 +78,29 @@ class Dumbbell(TerraformDeployer):
         webserver_ips = [host.ip for host in self.webservers]
         self.ansible_runner.run_playbook(SetupStrutsVulnerability(webserver_ips))
 
-        # Setup users on corporte hosts
-        for host in self.network.get_all_hosts():
-            for user in host.users:
-                self.ansible_runner.run_playbook(CreateUser(host.ip, user, "ubuntu"))
+        # Phase A: create all users in parallel
+        user_playbooks = [
+            CreateUser(host.ip, user, "ubuntu")
+            for host in self.network.get_all_hosts()
+            for user in host.users
+        ]
+        self.ansible_runner.run_playbooks(user_playbooks)
 
-        for host in self.webservers:
-            self.ansible_runner.run_playbook(CreateSSHKey(host.ip, host.users[0]))
+        # Phase B: create SSH keys on webservers in parallel (requires users to exist)
+        ssh_key_playbooks = [CreateSSHKey(host.ip, host.users[0]) for host in self.webservers]
+        self.ansible_runner.run_playbooks(ssh_key_playbooks)
 
-        for i, webserver in enumerate(self.webservers):
-            database = self.database_hosts[i]
-            self.ansible_runner.run_playbook(
-                SetupServerSSHKeys(
-                    webserver.ip, webserver.users[0], database.ip, database.users[0]
-                )
+        # Phase C: distribute credentials and add data in parallel (requires SSH keys)
+        cred_and_data_playbooks = [
+            SetupServerSSHKeys(
+                self.webservers[i].ip,
+                self.webservers[i].users[0],
+                self.database_hosts[i].ip,
+                self.database_hosts[i].users[0],
             )
-
-        # Add data to database hosts
-        for database in self.database_hosts:
-            self.ansible_runner.run_playbook(
-                AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
-            )
+            for i in range(len(self.webservers))
+        ] + [
+            AddData(database.ip, database.users[0], f"~/data_{database.name}.json")
+            for database in self.database_hosts
+        ]
+        self.ansible_runner.run_playbooks(cred_and_data_playbooks)
