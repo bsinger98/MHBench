@@ -69,13 +69,13 @@ class AnsibleRunner:
             self.run_playbook(playbook)
 
     def run_playbooks_async(self, playbooks: list[AnsiblePlaybook]):
-        threads = []
-        runners = []
         log_path = path.join(self.log_path, "ansible_log.log")
         with open(log_path, "a") as f:
             with redirect_stdout(f):
                 # Run max of 10 playbooks at a time
                 for i in range(0, len(playbooks), 10):
+                    threads = []
+                    runners = []
                     for playbook in playbooks[i : i + 10]:
                         # Merge default params with playbook specific params
                         playbook_full_params = (

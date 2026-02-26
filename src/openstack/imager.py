@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from openstack.connection import Connection
 from src.utility.logging import get_logger
 from typing import Any, cast
@@ -24,15 +25,19 @@ class OpenstackImager:
 
     def save_all_snapshots(self):
         logger.debug("Saving all snapshots...")
-        for instance in self.openstack_conn.list_servers():
-            self._save_snapshot(instance)
+        instances = list(self.openstack_conn.list_servers())
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(self._save_snapshot, inst): inst for inst in instances}
+            for future in as_completed(futures):
+                future.result()
 
     def clean_snapshots(self):
         logger.debug("Cleaning all snapshots...")
-        images = self.openstack_conn.list_images()
-        for image in images:
-            if "_image" in image.name:
-                self.openstack_conn.delete_image(image.id, wait=True)
+        images = [img for img in self.openstack_conn.list_images() if "_image" in img.name]
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(self.openstack_conn.delete_image, img.id, True) for img in images]
+            for future in as_completed(futures):
+                future.result()
 
     def _save_snapshot(self, host):
         snapshot_name = get_image_name(host.name)

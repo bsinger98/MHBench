@@ -110,12 +110,12 @@ class OpenstackAnsibleHostBuilder:
         # Phase 1: Create all users on all hosts first (dependency requirement)
         self.logger.info("Phase 1: Creating users on all hosts")
         user_playbooks = self._generate_user_creation_playbooks(all_hosts)
-        self.ansible_runner.run_playbooks_serial(user_playbooks)
+        self.ansible_runner.run_playbooks_async(user_playbooks)
 
         # Phase 2: Set up SSH keys (requires all users to exist)
         self.logger.info("Phase 2: Setting up SSH keys between hosts")
         ssh_playbooks = self._generate_ssh_key_playbooks(all_hosts)
-        self.ansible_runner.run_playbooks_serial(ssh_playbooks)
+        self.ansible_runner.run_playbooks_async(ssh_playbooks)
 
         # Phase 3: Configure vulnerabilities and other host-specific settings
         self.logger.info("Phase 3: Configuring vulnerabilities and other settings")
@@ -123,12 +123,12 @@ class OpenstackAnsibleHostBuilder:
         vuln_playbooks = self._generate_vuln_playbooks(all_hosts)
         # vuln_playbooks = self._generate_attack_path_playbooks()
 
-        self.ansible_runner.run_playbooks_serial(vuln_playbooks)
+        self.ansible_runner.run_playbooks_async(vuln_playbooks)
 
         # Phase 4: Configure goals
         self.logger.info("Phase 4: Configuring goals")
         goal_playbooks = self._generate_goal_playbooks(topology.goals)
-        self.ansible_runner.run_playbooks_serial(goal_playbooks)
+        self.ansible_runner.run_playbooks_async(goal_playbooks)
 
         self.logger.info("Completed Ansible configuration of topology hosts")
 

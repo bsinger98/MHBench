@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import openstack
 from openstack.exceptions import SDKException
 
@@ -22,27 +24,32 @@ def delete_instances(conn):
 # Deleting floating ips
 def delete_floating_ips(conn):
     floating_ips = conn.list_floating_ips()
-    for floating_ip in floating_ips:
-        try:
-            conn.delete_floating_ip(floating_ip.id)
-        except SDKException:
-            pass
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(conn.delete_floating_ip, fip.id) for fip in floating_ips]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except SDKException:
+                pass
 
 
 # Delete routers
 def delete_routers(conn):
+    # Fetch all router-interface ports once instead of once per router
+    router_interface_ports = [
+        p for p in conn.list_ports()
+        if p.device_owner == "network:router_interface"
+    ]
     for router in conn.list_routers():
-        # First, detach all router interfaces
-        for port in conn.list_ports():
-            if port.device_owner == "network:router_interface":
-                subnet_id = port.fixed_ips[0]["subnet_id"]
-                try:
-                    conn.remove_router_interface(router, subnet_id=subnet_id)
-                except SDKException:
-                    print(
-                        f"Error removing router interface {subnet_id} from router {router.id}"
-                    )
-                    continue
+        for port in router_interface_ports:
+            subnet_id = port.fixed_ips[0]["subnet_id"]
+            try:
+                conn.remove_router_interface(router, subnet_id=subnet_id)
+            except SDKException:
+                print(
+                    f"Error removing router interface {subnet_id} from router {router.id}"
+                )
+                continue
 
         # Finally, delete the router
         conn.delete_router(router.id)
@@ -50,14 +57,12 @@ def delete_routers(conn):
 
 # Delete all ports
 def delete_ports(conn):
-    # Attempt to delete all associated ports
-    networks = conn.list_networks()
-    for network in networks:
-        # Get all ports associated with the network
-        ports = conn.list_ports()
-        for port in ports:
+    ports = conn.list_ports()
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(conn.delete_port, port.id) for port in ports]
+        for future in as_completed(futures):
             try:
-                conn.delete_port(port.id)
+                future.result()
             except SDKException:
                 pass
 
@@ -72,39 +77,39 @@ subnet_exclude_list = [
 
 
 def delete_subnets(conn):
-    subnets = conn.list_subnets()
-    for subnet in subnets:
-        if subnet.name in subnet_exclude_list:
-            continue
-        try:
-            conn.delete_subnet(subnet.id)
-        except SDKException:
-            pass
+    subnets = [s for s in conn.list_subnets() if s.name not in subnet_exclude_list]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(conn.delete_subnet, subnet.id) for subnet in subnets]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except SDKException:
+                pass
 
 
 network_exclude_list = ["shared", "external", "public"]
 
 
 def delete_networks(conn):
-    networks = conn.list_networks()
-    for network in networks:
-        if network.name in network_exclude_list:
-            continue
-        try:
-            conn.delete_network(network.id)
-        except SDKException:
-            pass
+    networks = [n for n in conn.list_networks() if n.name not in network_exclude_list]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(conn.delete_network, network.id) for network in networks]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except SDKException:
+                pass
 
 
 security_group_exclude_list = ["default"]
 
 
 def delete_security_groups(conn):
-    security_groups = conn.list_security_groups()
-    for sg in security_groups:
-        if sg.name in security_group_exclude_list:
-            continue
-        try:
-            conn.delete_security_group(sg.id)
-        except SDKException:
-            pass
+    security_groups = [sg for sg in conn.list_security_groups() if sg.name not in security_group_exclude_list]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(conn.delete_security_group, sg.id) for sg in security_groups]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except SDKException:
+                pass
