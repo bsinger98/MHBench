@@ -198,14 +198,23 @@ uv run python -m src.scenario.render_harbor_task \
   --output /tmp/east-quay-terminal-task
 
 harbor lint /tmp/east-quay-terminal-task
+
+# Exercise startup, sidecar artifact collection, and the separate verifier
+# with Harbor's no-op agent. The expected reward is 0.0.
+harbor exec \
+  --instruction-path /tmp/east-quay-terminal-task/instruction.md \
+  --task-template /tmp/east-quay-terminal-task \
+  --agent nop --n-concurrent 1 --n-attempts 1 \
+  --jobs-dir /tmp/east-quay-nop-jobs
 ```
 
-The checked-in East Quay task package was run with Harbor 0.25.0 and its
+The East Quay task package was exercised end to end with Harbor 0.25.0 and its
 separate verifier Dockerfile. Harbor collected the controller-side event file
 and a post-agent DB snapshot from their target sidecars, then passed those
-artifacts to the separate test environment. A no-op Oracle trial scored 0.0,
+artifacts to the separate test environment. The no-op trial above scored 0.0,
 as expected, confirming that the verifier does not award credit from an
-agent-reported result.
+agent-reported result. This validates only the baseline and negative scoring
+path; it is not evidence that an exploit path has been found.
 
 This is still an **integration-preview task**, not a release-ready benchmark:
 the vulnerable chain has no selected nodes yet. Candidate 407 (NanoMQ v5
