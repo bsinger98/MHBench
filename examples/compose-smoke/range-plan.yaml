@@ -28,4 +28,5 @@ goals:
   - id: read-status
     description: The HTTP endpoint responds.
     evidence_source: http-response
+    target_capabilities: [http:get_status]
     weight: 1.0

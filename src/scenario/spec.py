@@ -158,15 +158,25 @@ class CandidatePathHypothesis(SpecModel):
     id: str
     candidate_ids: list[str] = Field(min_length=2)
     target_goal_id: str
+    target_capability: str | None = None
     rationale: str
     unresolved_gates: list[str] = Field(default_factory=list)
     status: Literal["hypothesis", "rejected", "approved"] = "hypothesis"
+
+    @model_validator(mode="after")
+    def approved_path_has_target(self) -> "CandidatePathHypothesis":
+        if self.status == "approved" and not self.target_capability:
+            raise ValueError(
+                f"approved candidate path {self.id} must declare target_capability"
+            )
+        return self
 
 
 class ResourceGoal(SpecModel):
     id: str
     description: str
     evidence_source: str
+    target_capabilities: list[str] = Field(default_factory=list)
     weight: float = Field(gt=0)
 
 
@@ -244,6 +254,32 @@ class RangePlan(SpecModel):
         for weakness in self.weaknesses:
             require(weakness.candidate_id, candidates, "weakness candidate")
             require(weakness.service_id, services, "service")
+            candidate = candidates[weakness.candidate_id]
+            assert isinstance(candidate, WeaknessCandidate)
+            if candidate.triage_status != "selected":
+                raise ValueError(
+                    f"weakness {weakness.id} selects candidate "
+                    f"{candidate.id} whose triage_status is "
+                    f"{candidate.triage_status!r}, not 'selected'"
+                )
+            if candidate.public_poc_screen != "pass":
+                raise ValueError(
+                    f"selected candidate {candidate.id} has not passed "
+                    "the public PoC screen"
+                )
+            if candidate.live_reproduction != "pass":
+                raise ValueError(
+                    f"selected candidate {candidate.id} has not passed "
+                    "live vulnerable/fixed reproduction"
+                )
+            if candidate.artifact_pair_status not in (
+                "registry-pair",
+                "source-build-required",
+            ):
+                raise ValueError(
+                    f"selected candidate {candidate.id} has no verified "
+                    "vulnerable/fixed artifact pair"
+                )
         for network in self.networks:
             if not network.purpose.strip():
                 raise ValueError(f"network {network.id} needs a purpose")
@@ -258,6 +294,20 @@ class RangePlan(SpecModel):
             require(flow.to_service, services, "service")
         for transition in self.attack_transitions:
             require(transition.weakness_id, weaknesses, "weakness")
+            weakness = weaknesses[transition.weakness_id]
+            assert isinstance(weakness, WeaknessInstance)
+            candidate = candidates[weakness.candidate_id]
+            assert isinstance(candidate, WeaknessCandidate)
+            if transition.from_capability not in candidate.requires_capabilities:
+                raise ValueError(
+                    f"transition {transition.id} starts from a capability "
+                    f"not declared by candidate {candidate.id}"
+                )
+            if transition.to_capability not in candidate.grants_capabilities:
+                raise ValueError(
+                    f"transition {transition.id} grants a capability not "
+                    f"declared by candidate {candidate.id}"
+                )
         for observation in self.artifact_observations:
             for candidate_id in observation.candidate_ids:
                 require(candidate_id, candidates, "weakness candidate")
@@ -267,6 +317,53 @@ class RangePlan(SpecModel):
                 raise ValueError(f"candidate path {path.id} repeats a candidate")
             for candidate_id in path.candidate_ids:
                 require(candidate_id, candidates, "weakness candidate")
+            if path.status == "approved":
+                if path.unresolved_gates:
+                    raise ValueError(
+                        f"approved candidate path {path.id} still has unresolved gates"
+                    )
+                target_goal = next(
+                    goal for goal in self.goals if goal.id == path.target_goal_id
+                )
+                if path.target_capability not in target_goal.target_capabilities:
+                    raise ValueError(
+                        f"approved candidate path {path.id} target_capability "
+                        f"{path.target_capability!r} is not declared by resource "
+                        f"goal {target_goal.id}"
+                    )
+                path_candidates = set(path.candidate_ids)
+                deployed_candidates = {
+                    weakness.candidate_id for weakness in self.weaknesses
+                }
+                if not path_candidates <= deployed_candidates:
+                    missing = sorted(path_candidates - deployed_candidates)
+                    raise ValueError(
+                        f"approved candidate path {path.id} contains candidates "
+                        f"not explicitly deployed as weaknesses: {missing}"
+                    )
+                reachable = set(self.entry_state.capabilities)
+                for candidate_id in path.candidate_ids:
+                    candidate_grants: set[str] = set()
+                    for transition in self.attack_transitions:
+                        weakness = weaknesses[transition.weakness_id]
+                        assert isinstance(weakness, WeaknessInstance)
+                        if (
+                            weakness.candidate_id == candidate_id
+                            and transition.from_capability in reachable
+                        ):
+                            candidate_grants.add(transition.to_capability)
+                    if not candidate_grants:
+                        raise ValueError(
+                            f"approved candidate path {path.id} is not a "
+                            f"continuous chain at candidate {candidate_id}"
+                        )
+                    reachable.update(candidate_grants)
+                if path.target_capability not in reachable:
+                    raise ValueError(
+                        f"approved candidate path {path.id} does not reach "
+                        "target_capability after applying its ordered weakness "
+                        "transitions"
+                    )
 
         attached = {attachment.service_id for attachment in self.attachments}
         for service in self.services:

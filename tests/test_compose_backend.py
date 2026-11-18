@@ -25,6 +25,96 @@ SMOKE_DIR = ROOT / "examples/compose-smoke"
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI is not installed")
 class ComposeBackendTest(unittest.TestCase):
+    def _two_hop_plan(self):
+        raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
+        raw["weakness_candidates"] = []
+        raw["weaknesses"] = []
+        raw["attack_transitions"] = []
+        raw["candidate_paths"] = []
+        raw["goals"][0]["target_capabilities"] = ["integrity:target-record"]
+        for index, (required, granted) in enumerate(
+            (
+                ("http:get_status", "credential:internal-worker"),
+                ("credential:internal-worker", "integrity:target-record"),
+            ),
+            start=1,
+        ):
+            candidate_id = f"candidate-{index}"
+            raw["weakness_candidates"].append(
+                {
+                    "id": candidate_id,
+                    "source_ref": f"test://candidate-{index}",
+                    "product": "smoke fixture",
+                    "vulnerable_baseline": "1.0",
+                    "fix_commit": f"fix-{index}",
+                    "mechanism": f"verified mechanism {index}",
+                    "precondition": required,
+                    "requires_capabilities": [required],
+                    "grants_capabilities": [granted],
+                    "resource_effects": [granted],
+                    "business_fit": "Used only to exercise ordered path validation.",
+                    "selection_band": "core",
+                    "selection_rationale": "Test fixture.",
+                    "triage_status": "selected",
+                    "artifact_pair_status": "registry-pair",
+                    "public_poc_screen": "pass",
+                    "live_reproduction": "pass",
+                }
+            )
+            raw["weaknesses"].append(
+                {
+                    "id": f"weakness-{index}",
+                    "candidate_id": candidate_id,
+                    "service_id": "status-page",
+                    "catalog_ref": f"weakness://smoke/{index}",
+                    "rationale": "Test fixture.",
+                }
+            )
+            raw["attack_transitions"].append(
+                {
+                    "id": f"transition-{index}",
+                    "from_capability": required,
+                    "to_capability": granted,
+                    "weakness_id": f"weakness-{index}",
+                }
+            )
+        raw["candidate_paths"] = [
+            {
+                "id": "approved-two-hop",
+                "candidate_ids": ["candidate-1", "candidate-2"],
+                "target_goal_id": "read-status",
+                "target_capability": "integrity:target-record",
+                "rationale": "A connected two-hop test chain.",
+                "status": "approved",
+            }
+        ]
+        return raw
+
+    def test_approved_candidate_path_validates_as_ordered_capability_chain(self):
+        plan = RangePlan.model_validate(self._two_hop_plan())
+        self.assertEqual(plan.candidate_paths[0].status, "approved")
+
+    def test_selected_weakness_rejects_unselected_candidate(self):
+        raw = self._two_hop_plan()
+        raw["weakness_candidates"][0]["triage_status"] = "candidate"
+        with self.assertRaisesRegex(ValidationError, "triage_status"):
+            RangePlan.model_validate(raw)
+
+    def test_approved_candidate_path_rejects_disconnected_order(self):
+        raw = self._two_hop_plan()
+        raw["candidate_paths"][0]["candidate_ids"] = [
+            "candidate-2",
+            "candidate-1",
+        ]
+        with self.assertRaisesRegex(ValidationError, "continuous chain"):
+            RangePlan.model_validate(raw)
+
+    def test_approved_candidate_path_must_reach_resource_goal_capability(self):
+        raw = self._two_hop_plan()
+        raw["candidate_paths"][0]["target_capability"] = "integrity:other-record"
+        with self.assertRaisesRegex(ValidationError, "not declared by resource goal"):
+            RangePlan.model_validate(raw)
+
     def test_refuses_to_silently_drop_unimplemented_weaknesses(self):
         bundle = load_bundle(
             SCENARIO_DIR / "scenario.yaml",

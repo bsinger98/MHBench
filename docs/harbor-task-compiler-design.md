@@ -1,7 +1,9 @@
 # Harbor task compiler: design proposal
 
-**Status:** discussion draft; no runtime code or vulnerability templates are
-implemented by this document.
+**Status:** implementation preview. The scenario/range schemas, Compose
+renderer, Harbor task compiler, and East Quay integration fixture are
+implemented. A deployable weakness catalog/adapter is still missing, so
+non-empty weakness plans are intentionally rejected during Compose rendering.
 
 The first executable part of this proposal is a two-stage, backend-neutral
 input contract in `src/scenario/spec.py`: the business scenario at
@@ -16,11 +18,16 @@ uv run python -m src.scenario.validate \
 ```
 
 This command validates schema and cross-references; it does not yet resolve
-weakness catalog entries or produce a Harbor task. The East Quay range plan
-now carries a `weakness_candidates` list distinct from `weaknesses`:
+weakness catalog entries. The East Quay range plan carries a
+`weakness_candidates` list distinct from `weaknesses`:
 candidates are research leads, while weakness instances are selected,
-deployable entries. Its service `catalog_ref` values are illustrative, not
-claims that those service templates already exist.
+deployable entries. Deploying one requires a selected candidate, a passed
+public-PoC screen, live vulnerable/fixed reproduction, and a verified artifact
+pair. Approved candidate paths must list explicitly deployed candidates in
+capability-contiguous order and name a target capability declared by the
+linked resource goal. These checks stop an unreviewed or disconnected path
+from being represented as approved; they do not discover the path or deploy
+its weaknesses.
 
 A first Compose adapter is available at `src/scenario/compose_backend.py`.
 It resolves service `catalog_ref`s against a reviewed service catalog,
@@ -28,9 +35,9 @@ renders Compose and copies declared build contexts. Its smoke fixture lives in
 `examples/compose-smoke/`. It intentionally refuses any range plan containing
 weakness instances because deployment from a reviewed weakness catalog is not
 implemented yet; silently ignoring them could produce a misleading benchmark.
-Compose syntax has been validated with `docker compose config --quiet`, but
-this prototype is not yet a Harbor task compiler or stock-Harbor portability
-claim.
+The renderer plus Harbor task compiler has been exercised with Docker Compose
+and Harbor 0.25.0. This proves local integration only, not yet stock-Harbor
+portability across other Harbor versions.
 
 ## Recommendation
 

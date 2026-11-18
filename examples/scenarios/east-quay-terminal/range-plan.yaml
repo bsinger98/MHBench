@@ -189,4 +189,5 @@ goals:
 - id: held-shipment-loaded
   description: The held shipment is recorded as loaded without the normal clearance and dispatch approval.
   evidence_source: verifier-observed-port-db-yard-event-and-mqtt-command
+  target_capabilities: [integrity:held-shipment-loaded]
   weight: 1.0
