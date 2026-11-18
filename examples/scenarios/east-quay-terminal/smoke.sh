@@ -49,7 +49,7 @@ TARGET_SHIP="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
 # Harbor's agent and each target service must keep their own PID/IPC namespace.
 # An empty PidMode means Docker's normal private-per-container namespace; host or
 # container:<id> modes would collapse that boundary.
-for service in main port-app port-db yard-dispatch yard-control yard-broker; do
+for service in main port-app port-db yard-dispatch yard-control yard-broker yard-observer; do
   container_id="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
     -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" ps -q "$service")"
   [[ -n "$container_id" ]] || { echo "missing container for $service" >&2; exit 1; }
@@ -99,15 +99,30 @@ docker compose -p "$PROJECT" --project-directory "$OUT" \
     -u diagnostic -P local-diagnostic-password -V mqttv5 \
     -t eastquay/yard/commands -m "{\"ship_number\":${TARGET_SHIP},\"country_id\":1,\"action\":\"load\"}" \
     >/dev/null 2>&1 || true
+docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main mosquitto_pub -h yard-broker -p 1883 \
+    -u observer -P local-observer-password -V mqttv5 \
+    -t eastquay/yard/commands -m "{\"ship_number\":${TARGET_SHIP},\"country_id\":1,\"action\":\"load\"}" \
+    >/dev/null 2>&1 || true
 BASELINE_STATE="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T port-db mariadb -ueastquay -plocal-only eastquay -N -e \
   "SELECT IF(s.Curr_Status='AL' AND c.Status='On Hold' AND COUNT(e.Event_Id)=0, 'PASS', 'FAIL') FROM ships s JOIN clearance_records c ON c.Ship_Number=s.Number AND c.Country_Id=s.Id LEFT JOIN yard_events e ON e.Ship_Number=s.Number WHERE s.Number=${TARGET_SHIP} GROUP BY s.Number,c.Status")"
 test "$BASELINE_STATE" = PASS
+OBSERVED_BASELINE="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T yard-observer sh -c 'wc -l < /tmp/yard-broker-observed-commands.jsonl' | tr -d ' \r\n')"
+test "$OBSERVED_BASELINE" = 0
 if docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T main sh -c 'nc -zw2 yard-control 8082 2>/dev/null'; then
   echo "agent unexpectedly reached yard-control" >&2; exit 1
+fi
+if docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main sh -c 'nc -zw2 yard-observer 1883 2>/dev/null'; then
+  echo "agent unexpectedly reached the passive command observer" >&2; exit 1
 fi
 if docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
@@ -161,10 +176,14 @@ docker compose -p "$PROJECT" --project-directory "$OUT" \
 docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T yard-control grep -Eq '\"source\"[[:space:]]*:[[:space:]]*\"mqtt-yard-controller\"' /tmp/yard-controller-events.jsonl
+docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T yard-observer python -c \
+    "import json; p='/tmp/yard-broker-observed-commands.jsonl'; events=[json.loads(x) for x in open(p)]; assert any(e.get('topic')=='eastquay/yard/commands' and e.get('payload',{}).get('ship_number')==${TARGET_SHIP} and e.get('payload',{}).get('action')=='load' for e in events)"
 if docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
-  exec -T main test -r /tmp/yard-controller-events.jsonl; then
-  echo "agent unexpectedly read the verifier's controller-side evidence file" >&2; exit 1
+  exec -T main test -r /tmp/yard-broker-observed-commands.jsonl; then
+  echo "agent unexpectedly read the independent broker-observer evidence file" >&2; exit 1
 fi
 
 echo "East Quay Harbor Compose smoke: PASS"

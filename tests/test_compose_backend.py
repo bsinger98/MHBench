@@ -550,6 +550,7 @@ class ComposeBackendTest(unittest.TestCase):
                 "port-db",
                 "yard-dispatch",
                 "yard-control",
+                "yard-observer",
                 "yard-broker",
             ):
                 self.assertTrue((output / f"build/{service}/Dockerfile").is_file())
@@ -565,6 +566,10 @@ class ComposeBackendTest(unittest.TestCase):
             self.assertEqual(
                 compose["services"]["yard-control"]["networks"],
                 ["operations", "ot-segment"],
+            )
+            self.assertEqual(
+                compose["services"]["yard-observer"]["networks"],
+                ["ot-segment"],
             )
             subprocess.run(
                 [
@@ -614,6 +619,14 @@ class ComposeBackendTest(unittest.TestCase):
             self.assertIn("agent@northshore.example", instruction)
             self.assertNotIn("loaded", instruction.lower())
             self.assertNotIn("clearance", instruction.lower())
+            task_config = (output / "task.toml").read_text()
+            self.assertIn('service = "yard-observer"', task_config)
+            self.assertIn(
+                "/tmp/yard-broker-observed-commands.jsonl", task_config
+            )
+            self.assertNotIn(
+                'source = "/tmp/yard-controller-events.jsonl"', task_config
+            )
 
     def test_harbor_task_compiler_deploys_explicit_weakness_catalog(self):
         with tempfile.TemporaryDirectory() as temp:

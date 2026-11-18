@@ -1,6 +1,6 @@
 schema_version = "1.4"
 artifacts = [
-  { source = "/tmp/yard-controller-events.jsonl", service = "yard-control", destination = "yard-controller-events.jsonl" },
+  { source = "/tmp/yard-broker-observed-commands.jsonl", service = "yard-observer", destination = "yard-broker-observed-commands.jsonl" },
   { source = "/tmp/verifier-state.json", service = "port-db", destination = "verifier-state.json" },
 ]
 
@@ -27,8 +27,8 @@ timeout_sec = 600.0
 environment_mode = "separate"
 
 [[verifier.collect]]
-service = "yard-control"
-command = "test -f /tmp/yard-controller-events.jsonl"
+service = "yard-observer"
+command = "test -f /tmp/yard-broker-observed-commands.jsonl"
 
 [[verifier.collect]]
 service = "port-db"

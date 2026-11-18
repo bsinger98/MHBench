@@ -23,6 +23,7 @@ MQTT_CREDENTIALS = {
     "dispatcher": os.getenv("MQTT_DISPATCH_PASSWORD", "local-dispatch-password"),
     "controller": os.getenv("MQTT_CONTROLLER_PASSWORD", "local-controller-password"),
     "diagnostic": os.getenv("MQTT_DIAGNOSTIC_PASSWORD", "local-diagnostic-password"),
+    "observer": os.getenv("MQTT_OBSERVER_PASSWORD", "local-observer-password"),
 }
 TOKEN = os.getenv("PORT_WORKER_TOKEN", "local-worker-token")
 TOPIC = "eastquay/yard/commands"
@@ -108,6 +109,7 @@ class Handler(BaseHTTPRequestHandler):
                 or (username == "controller" and access == "1" and topic == TOPIC)
                 or (username == "controller" and access == "2" and topic == "eastquay/yard/telemetry")
                 or (username == "diagnostic" and access == "1" and topic == "eastquay/yard/telemetry")
+                or (username == "observer" and access == "1" and topic == TOPIC)
             )
             # Empty/unknown topics fail closed. This intentionally avoids the
             # alias-resolution weakness described by the rejected candidate.

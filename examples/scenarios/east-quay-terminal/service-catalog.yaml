@@ -28,6 +28,11 @@ services:
   dockerfile: Dockerfile
   default_expose: [8082]
   healthcheck: [CMD-SHELL, "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8082/healthz', timeout=2)\""]
+- catalog_ref: service://east-quay/yard-observer/python312
+  delivery: build
+  context: build/yard-observer
+  dockerfile: Dockerfile
+  healthcheck: [CMD-SHELL, "test -f /tmp/yard-observer-ready"]
 - catalog_ref: service://east-quay/yard-broker/nanomq0256
   delivery: build
   context: build/yard-broker

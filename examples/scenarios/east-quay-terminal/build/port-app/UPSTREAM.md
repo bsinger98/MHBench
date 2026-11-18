@@ -14,4 +14,5 @@ Integration hardening: the upstream `shipupdate.php` form and its
 `shipstatus.php` handler were not role-protected, although they mutate vessel
 status and are not part of the carrier workflow. Both are limited to the
 operations role in this range so the legacy direct status-update path cannot
-bypass clearance, yard dispatch, and controller-side evidence.
+bypass clearance, yard dispatch, and the independent broker-observation
+evidence path.
