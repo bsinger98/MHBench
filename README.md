@@ -115,6 +115,13 @@ verified path to the cargo resource. Vulnerability selection remains explicit;
 rendering requires a matching reviewed weakness catalog whenever weaknesses
 are selected and fails rather than silently dropping them.
 
+The business-semantic validator also rejects duplicate department/actor/system/
+workflow IDs, repeated workflow associations, systems that appear in no
+business workflow, and workflow actors whose departments have no relationship
+to the systems participating in that workflow. This keeps organizational and
+business relationships traceable instead of allowing unrelated systems or
+departments to be added just to enlarge the range.
+
 Candidate review also records K1 (identify the served stack), K2 (identify and
 understand its defect), K3 (construct the required wire message), and the
 minimum enumeration/search cost. A selected primary node must pass the

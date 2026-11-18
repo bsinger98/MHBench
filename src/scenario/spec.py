@@ -497,6 +497,31 @@ class ScenarioPlan(SpecModel):
     systems: list[BusinessSystem] = Field(min_length=1)
     workflows: list[Workflow] = Field(min_length=1)
 
+    @model_validator(mode="after")
+    def validate_business_model(self) -> "ScenarioPlan":
+        collections = {
+            "department": self.departments,
+            "actor": self.actors,
+            "system": self.systems,
+            "workflow": self.workflows,
+        }
+        for label, items in collections.items():
+            ids = [item.id for item in items]
+            if len(ids) != len(set(ids)):
+                raise ValueError(f"duplicate {label} id in scenario plan")
+
+        for system in self.systems:
+            if len(system.department_ids) != len(set(system.department_ids)):
+                raise ValueError(
+                    f"system {system.id} repeats a department association"
+                )
+        for workflow in self.workflows:
+            if len(workflow.actor_ids) != len(set(workflow.actor_ids)):
+                raise ValueError(f"workflow {workflow.id} repeats an actor")
+            if len(workflow.system_ids) != len(set(workflow.system_ids)):
+                raise ValueError(f"workflow {workflow.id} repeats a system")
+        return self
+
 
 class RangePlan(SpecModel):
     """Level 2: realize a ScenarioPlan as catalog-backed cyber-range assets."""
@@ -791,6 +816,39 @@ class ScenarioBundle(SpecModel):
                         f"workflow {workflow.id} references system {system_id} "
                         "with no concrete service in the range plan"
                     )
+            workflow_departments = {
+                department_id
+                for system_id in workflow.system_ids
+                for system in self.scenario.systems
+                if system.id == system_id
+                for department_id in system.department_ids
+            }
+            for actor_id in workflow.actor_ids:
+                actor = next(
+                    actor for actor in self.scenario.actors if actor.id == actor_id
+                )
+                if (
+                    actor.department_id is not None
+                    and actor.department_id not in workflow_departments
+                ):
+                    raise ValueError(
+                        f"workflow {workflow.id} includes actor {actor.id} from "
+                        f"department {actor.department_id}, but none of its "
+                        "business systems involve that department"
+                    )
+
+        workflow_systems = {
+            system_id
+            for workflow in self.scenario.workflows
+            for system_id in workflow.system_ids
+        }
+        unused_systems = systems - workflow_systems
+        if unused_systems:
+            raise ValueError(
+                "business systems must participate in at least one workflow: "
+                f"{sorted(unused_systems)}"
+            )
+
         for flow in self.range.flows:
             source = service_by_id[flow.from_service]
             target = service_by_id[flow.to_service]

@@ -17,13 +17,61 @@ from src.scenario.compose_backend import (
     render_compose,
 )
 from src.scenario.render_harbor_task import main as render_harbor_task
-from src.scenario.spec import RangePlan, WeaknessCandidate, WeaknessInstance
+from src.scenario.spec import (
+    RangePlan,
+    ScenarioBundle,
+    ScenarioPlan,
+    WeaknessCandidate,
+    WeaknessInstance,
+)
 from pydantic import ValidationError
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIO_DIR = ROOT / "examples/scenarios/east-quay-terminal"
 SMOKE_DIR = ROOT / "examples/compose-smoke"
+
+
+class ScenarioSemanticValidationTest(unittest.TestCase):
+    def _east_quay_bundle(self, scenario_raw=None):
+        scenario_raw = scenario_raw or load_yaml(SCENARIO_DIR / "scenario.yaml")
+        return ScenarioBundle(
+            scenario=ScenarioPlan.model_validate(scenario_raw),
+            range=RangePlan.model_validate(
+                load_yaml(SCENARIO_DIR / "range-plan.yaml")
+            ),
+        )
+
+    def test_scenario_plan_rejects_duplicate_semantic_ids(self):
+        scenario = load_yaml(SCENARIO_DIR / "scenario.yaml")
+        scenario["actors"][1]["id"] = scenario["actors"][0]["id"]
+        with self.assertRaisesRegex(ValidationError, "duplicate actor id"):
+            ScenarioPlan.model_validate(scenario)
+
+    def test_workflow_actor_department_must_match_participating_systems(self):
+        scenario = load_yaml(SCENARIO_DIR / "scenario.yaml")
+        scenario["actors"][1]["department_id"] = "automation-engineering"
+        with self.assertRaisesRegex(
+            ValidationError,
+            "workflow carrier-request-review includes actor cargo-clerk",
+        ):
+            self._east_quay_bundle(scenario)
+
+    def test_business_system_must_be_grounded_in_a_workflow(self):
+        scenario = load_yaml(SCENARIO_DIR / "scenario.yaml")
+        scenario["systems"].append(
+            {
+                "id": "unrelated-it",
+                "name": "Unrelated IT System",
+                "purpose": "An unreferenced system with no stated business workflow.",
+                "department_ids": ["terminal-operations"],
+            }
+        )
+        with self.assertRaisesRegex(
+            ValidationError,
+            "business systems must participate in at least one workflow",
+        ):
+            self._east_quay_bundle(scenario)
 
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI is not installed")
