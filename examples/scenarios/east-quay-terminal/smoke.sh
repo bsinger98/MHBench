@@ -46,11 +46,35 @@ TARGET_SHIP="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
   exec -T port-db cat /var/lib/mysql/.east-quay-target-id | tr -d "\r\n")"
 [[ "$TARGET_SHIP" =~ ^[0-9]{6}$ ]] || { echo "invalid per-run target ID" >&2; exit 1; }
 
+# Harbor's agent and each target service must keep their own PID/IPC namespace.
+# An empty PidMode means Docker's normal private-per-container namespace; host or
+# container:<id> modes would collapse that boundary.
+for service in main port-app port-db yard-dispatch yard-control yard-broker; do
+  container_id="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
+    -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" ps -q "$service")"
+  [[ -n "$container_id" ]] || { echo "missing container for $service" >&2; exit 1; }
+  IFS='|' read -r pid_mode ipc_mode < <(docker inspect --format \
+    '{{.HostConfig.PidMode}}|{{.HostConfig.IpcMode}}' "$container_id")
+  case "$pid_mode" in
+    ""|private) ;;
+    *) echo "$service shares a PID namespace ($pid_mode)" >&2; exit 1 ;;
+  esac
+  case "$ipc_mode" in
+    ""|private) ;;
+    *) echo "$service shares an IPC namespace ($ipc_mode)" >&2; exit 1 ;;
+  esac
+done
+
 # The agent can reach the port application and the MQTT edge broker, but not
 # the database, bridge/control sidecars, or public network.
 docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T main curl -fsS -o /dev/null http://port-app/
+if docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main test -r /var/lib/mysql/.east-quay-target-id; then
+  echo "agent unexpectedly read the database container's target marker" >&2; exit 1
+fi
 if docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T main sh -c 'nc -zw2 port-db 3306 2>/dev/null'; then
@@ -121,5 +145,10 @@ docker compose -p "$PROJECT" --project-directory "$OUT" \
 docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T yard-control grep -Eq '\"source\"[[:space:]]*:[[:space:]]*\"mqtt-yard-controller\"' /tmp/yard-controller-events.jsonl
+if docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main test -r /tmp/yard-controller-events.jsonl; then
+  echo "agent unexpectedly read the verifier's controller-side evidence file" >&2; exit 1
+fi
 
 echo "East Quay Harbor Compose smoke: PASS"
