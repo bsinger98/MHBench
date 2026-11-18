@@ -1,0 +1,12 @@
+schema_version: "1.0"
+services:
+  - catalog_ref: service://smoke/agent
+    delivery: build
+    context: build/agent
+    dockerfile: Dockerfile
+  - catalog_ref: service://smoke/http
+    delivery: build
+    context: build/http
+    dockerfile: Dockerfile
+    default_expose: [80]
+    healthcheck: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1/"]

@@ -1,0 +1,364 @@
+"""Validated input contract for semantically grounded cyber-range scenarios.
+
+This is intentionally separate from ``src.models.network.NetworkTopology``:
+the latter describes MHBench's existing VM-oriented range model, while these
+models capture business semantics and portable service-level deployment intent.
+"""
+
+from __future__ import annotations
+
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class SpecModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class Department(SpecModel):
+    id: str
+    name: str
+    purpose: str
+
+
+class Actor(SpecModel):
+    id: str
+    name: str
+    department_id: str | None = None
+    description: str
+
+
+class BusinessSystem(SpecModel):
+    id: str
+    name: str
+    purpose: str
+    department_ids: list[str] = Field(min_length=1)
+
+
+class Workflow(SpecModel):
+    id: str
+    name: str
+    purpose: str
+    actor_ids: list[str] = Field(min_length=1)
+    system_ids: list[str] = Field(min_length=1)
+    records: list[str] = Field(default_factory=list)
+    outcome: str
+
+
+class ServiceInstance(SpecModel):
+    id: str
+    system_ids: list[str] = Field(min_length=1)
+    catalog_ref: str
+    role: str
+    image: str | None = None
+    dockerfile: str | None = None
+    ports: list[int] = Field(default_factory=list)
+    depends_on: list[str] = Field(default_factory=list)
+    environment: dict[str, str] = Field(default_factory=dict)
+
+
+class WeaknessInstance(SpecModel):
+    """An explicitly selected/deployable weakness, linked to its candidate."""
+
+    id: str
+    candidate_id: str
+    service_id: str
+    catalog_ref: str
+    rationale: str
+
+
+class WeaknessCandidate(SpecModel):
+    """A sourced vulnerability candidate, not yet selected/deployed."""
+
+    id: str
+    source_ref: str
+    product: str
+    vulnerable_baseline: str
+    fix_commit: str
+    mechanism: str
+    precondition: str
+    requires_capabilities: list[str] = Field(min_length=1)
+    grants_capabilities: list[str] = Field(min_length=1)
+    resource_effects: list[str] = Field(min_length=1)
+    environment_preconditions: list[str] = Field(default_factory=list)
+    business_fit: str
+    selection_band: Literal["core", "adjacent", "alternate", "deferred"]
+    selection_rationale: str
+    triage_status: Literal["candidate", "selected", "rejected"] = "candidate"
+    artifact_pair_status: Literal[
+        "unchecked", "registry-pair", "source-build-required", "unavailable"
+    ] = "unchecked"
+    public_poc_screen: Literal["pending", "pass", "fail"] = "pending"
+    live_reproduction: Literal["pending", "pass", "fail"] = "pending"
+    notes: list[str] = Field(default_factory=list)
+
+
+class ArtifactObservation(SpecModel):
+    """Point-in-time evidence about buildable vulnerable/fixed artifacts."""
+
+    checked_on: str
+    candidate_ids: list[str] = Field(min_length=1)
+    observation: str
+    consequence: str
+
+
+class EntryState(SpecModel):
+    """Explicit initial access and capabilities supplied to the agent."""
+
+    actor_id: str
+    service_id: str
+    authentication: Literal[
+        "anonymous", "seeded-low-privilege", "provided-credentials"
+    ]
+    capabilities: list[str] = Field(min_length=1)
+    description: str
+    endpoint: str | None = None
+    credentials: dict[str, str] = Field(default_factory=dict)
+
+
+class AgentEnvironment(SpecModel):
+    """Harbor's isolated attacker container and its explicitly reachable nets."""
+
+    catalog_ref: str
+    network_ids: list[str] = Field(min_length=1)
+    tools: list[str] = Field(default_factory=list)
+
+
+class Network(SpecModel):
+    id: str
+    purpose: str
+    exposure: Literal["agent", "internal", "egress", "management"]
+
+
+class NetworkAttachment(SpecModel):
+    service_id: str
+    network_id: str
+
+
+class Flow(SpecModel):
+    id: str
+    from_service: str
+    to_service: str
+    protocol: str
+    port: int
+    purpose: str
+
+
+class AttackTransition(SpecModel):
+    id: str
+    from_capability: str
+    to_capability: str
+    weakness_id: str
+
+
+class CandidatePathHypothesis(SpecModel):
+    """Explicit, unapproved combination hypothesis over candidate IDs."""
+
+    id: str
+    candidate_ids: list[str] = Field(min_length=2)
+    target_goal_id: str
+    rationale: str
+    unresolved_gates: list[str] = Field(default_factory=list)
+    status: Literal["hypothesis", "rejected", "approved"] = "hypothesis"
+
+
+class ResourceGoal(SpecModel):
+    id: str
+    description: str
+    evidence_source: str
+    weight: float = Field(gt=0)
+
+
+class ScenarioPlan(SpecModel):
+    """Level 1: business scenario, independent of concrete vulnerabilities."""
+
+    schema_version: Literal["1.0"]
+    id: str
+    title: str
+    summary: str
+    departments: list[Department] = Field(min_length=1)
+    actors: list[Actor] = Field(min_length=1)
+    systems: list[BusinessSystem] = Field(min_length=1)
+    workflows: list[Workflow] = Field(min_length=1)
+
+
+class RangePlan(SpecModel):
+    """Level 2: realize a ScenarioPlan as catalog-backed cyber-range assets."""
+
+    schema_version: Literal["1.0"]
+    scenario_id: str
+    entry_state: EntryState
+    agent: AgentEnvironment | None = None
+    candidate_selection_policy: Literal["deterministic-business-evidence-first"] = (
+        "deterministic-business-evidence-first"
+    )
+    services: list[ServiceInstance] = Field(min_length=1)
+    weakness_candidates: list[WeaknessCandidate] = Field(default_factory=list)
+    artifact_observations: list[ArtifactObservation] = Field(default_factory=list)
+    weaknesses: list[WeaknessInstance] = Field(default_factory=list)
+    networks: list[Network] = Field(min_length=1)
+    attachments: list[NetworkAttachment] = Field(min_length=1)
+    flows: list[Flow] = Field(default_factory=list)
+    attack_transitions: list[AttackTransition] = Field(default_factory=list)
+    candidate_paths: list[CandidatePathHypothesis] = Field(default_factory=list)
+    goals: list[ResourceGoal] = Field(min_length=1)
+
+    def candidates_directly_reachable_from_entry(self) -> list[WeaknessCandidate]:
+        """Return candidates whose declared requirements are met at entry."""
+        entry_capabilities = set(self.entry_state.capabilities)
+        return [
+            candidate
+            for candidate in self.weakness_candidates
+            if set(candidate.requires_capabilities) <= entry_capabilities
+        ]
+
+    @model_validator(mode="after")
+    def validate_internal_references(self) -> "RangePlan":
+        def unique(items: list[object], label: str) -> dict[str, object]:
+            indexed: dict[str, object] = {}
+            for item in items:
+                key = getattr(item, "id")
+                if key in indexed:
+                    raise ValueError(f"duplicate {label} id: {key}")
+                indexed[key] = item
+            return indexed
+
+        services = unique(self.services, "service")
+        weaknesses = unique(self.weaknesses, "weakness")
+        candidates = unique(self.weakness_candidates, "weakness candidate")
+        networks = unique(self.networks, "network")
+        unique(self.flows, "flow")
+        unique(self.attack_transitions, "attack transition")
+        unique(self.candidate_paths, "candidate path")
+        unique(self.goals, "goal")
+
+        def require(ref: str, index: dict[str, object], kind: str) -> None:
+            if ref not in index:
+                raise ValueError(f"unknown {kind} reference: {ref}")
+
+        for service in self.services:
+            for dependency in service.depends_on:
+                require(dependency, services, "service")
+
+        for weakness in self.weaknesses:
+            require(weakness.candidate_id, candidates, "weakness candidate")
+            require(weakness.service_id, services, "service")
+        for network in self.networks:
+            if not network.purpose.strip():
+                raise ValueError(f"network {network.id} needs a purpose")
+        for attachment in self.attachments:
+            require(attachment.service_id, services, "service")
+            require(attachment.network_id, networks, "network")
+        if self.agent:
+            for network_id in self.agent.network_ids:
+                require(network_id, networks, "network")
+        for flow in self.flows:
+            require(flow.from_service, services, "service")
+            require(flow.to_service, services, "service")
+        for transition in self.attack_transitions:
+            require(transition.weakness_id, weaknesses, "weakness")
+        for observation in self.artifact_observations:
+            for candidate_id in observation.candidate_ids:
+                require(candidate_id, candidates, "weakness candidate")
+        for path in self.candidate_paths:
+            require(path.target_goal_id, {goal.id: goal for goal in self.goals}, "goal")
+            if len(path.candidate_ids) != len(set(path.candidate_ids)):
+                raise ValueError(f"candidate path {path.id} repeats a candidate")
+            for candidate_id in path.candidate_ids:
+                require(candidate_id, candidates, "weakness candidate")
+
+        attached = {attachment.service_id for attachment in self.attachments}
+        for service in self.services:
+            if service.id not in attached:
+                raise ValueError(f"service {service.id} is not attached to a network")
+        return self
+
+
+class ScenarioBundle(SpecModel):
+    """Two-stage authoring input with cross-validation between its plans."""
+
+    scenario: ScenarioPlan
+    range: RangePlan
+
+    @model_validator(mode="after")
+    def validate_cross_references(self) -> "ScenarioBundle":
+        if self.range.scenario_id != self.scenario.id:
+            raise ValueError(
+                f"range.scenario_id {self.range.scenario_id!r} does not match "
+                f"scenario.id {self.scenario.id!r}"
+            )
+        departments = {item.id for item in self.scenario.departments}
+        actors = {item.id for item in self.scenario.actors}
+        systems = {item.id for item in self.scenario.systems}
+        system_services: dict[str, set[str]] = {}
+        service_by_id = {item.id: item for item in self.range.services}
+
+        for actor in self.scenario.actors:
+            if actor.department_id and actor.department_id not in departments:
+                raise ValueError(
+                    f"actor {actor.id} references unknown department "
+                    f"{actor.department_id}"
+                )
+        if self.range.entry_state.actor_id not in actors:
+            raise ValueError(
+                f"entry state references unknown actor "
+                f"{self.range.entry_state.actor_id}"
+            )
+        if self.range.entry_state.service_id not in service_by_id:
+            raise ValueError(
+                f"entry state references unknown service "
+                f"{self.range.entry_state.service_id}"
+            )
+        for system in self.scenario.systems:
+            for department_id in system.department_ids:
+                if department_id not in departments:
+                    raise ValueError(
+                        f"system {system.id} references unknown department "
+                        f"{department_id}"
+                    )
+        for workflow in self.scenario.workflows:
+            for actor_id in workflow.actor_ids:
+                if actor_id not in actors:
+                    raise ValueError(
+                        f"workflow {workflow.id} references unknown actor {actor_id}"
+                    )
+            for system_id in workflow.system_ids:
+                if system_id not in systems:
+                    raise ValueError(
+                        f"workflow {workflow.id} references unknown system {system_id}"
+                    )
+        for service in self.range.services:
+            for system_id in service.system_ids:
+                if system_id not in systems:
+                    raise ValueError(
+                        f"service {service.id} references unknown business system "
+                        f"{system_id}"
+                    )
+                system_services.setdefault(system_id, set()).add(service.id)
+
+        for workflow in self.scenario.workflows:
+            for system_id in workflow.system_ids:
+                if system_id not in system_services:
+                    raise ValueError(
+                        f"workflow {workflow.id} references system {system_id} "
+                        "with no concrete service in the range plan"
+                    )
+        for flow in self.range.flows:
+            source = service_by_id[flow.from_service]
+            target = service_by_id[flow.to_service]
+            if set(source.system_ids) & set(target.system_ids):
+                continue
+            # A cross-system service flow is accepted only when those systems
+            # participate together in at least one stated business workflow.
+            related = any(
+                set(source.system_ids) & set(workflow.system_ids)
+                and set(target.system_ids) & set(workflow.system_ids)
+                for workflow in self.scenario.workflows
+            )
+            if not related:
+                raise ValueError(
+                    f"flow {flow.id} connects systems without a shared business "
+                    "workflow; add the workflow dependency or remove the flow"
+                )
+        return self

@@ -1,0 +1,26 @@
+schema_version: "1.0"
+id: compose-smoke
+title: Compose Backend Smoke Fixture
+summary: Minimal fixture used to test deterministic Compose rendering.
+departments:
+  - id: operations
+    name: Operations
+    purpose: Exercise the scenario input contract.
+actors:
+  - id: operator
+    name: Operator
+    department_id: operations
+    description: Uses the smoke fixture.
+systems:
+  - id: status-page
+    name: Status Page
+    purpose: Serves a small HTTP response for renderer validation.
+    department_ids: [operations]
+workflows:
+  - id: read-status
+    name: Read status
+    purpose: The operator reads the status page.
+    actor_ids: [operator]
+    system_ids: [status-page]
+    records: [status]
+    outcome: The status page responds.

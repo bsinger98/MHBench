@@ -1,0 +1,31 @@
+schema_version: "1.0"
+scenario_id: compose-smoke
+entry_state:
+  actor_id: operator
+  service_id: status-page
+  authentication: anonymous
+  capabilities: [http:get_status]
+  description: The smoke tester can make an unauthenticated HTTP request.
+agent:
+  catalog_ref: service://smoke/agent
+  network_ids: [agent-edge]
+services:
+  - id: status-page
+    system_ids: [status-page]
+    catalog_ref: service://smoke/http
+    role: Smoke-test HTTP endpoint.
+    ports: [80]
+networks:
+  - id: agent-edge
+    purpose: Network attached to the target-facing agent harness.
+    exposure: agent
+attachments:
+  - service_id: status-page
+    network_id: agent-edge
+flows: []
+attack_transitions: []
+goals:
+  - id: read-status
+    description: The HTTP endpoint responds.
+    evidence_source: http-response
+    weight: 1.0

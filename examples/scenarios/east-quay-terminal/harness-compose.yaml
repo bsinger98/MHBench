@@ -1,0 +1,8 @@
+# Local-only stand-in for Harbor's built main service, used by smoke.sh.
+# The generated Dockerfile is supplied by --project-directory as the build context.
+services:
+  main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["sh", "-c", "sleep infinity"]

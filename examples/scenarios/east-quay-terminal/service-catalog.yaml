@@ -1,0 +1,36 @@
+schema_version: '1.0'
+services:
+- catalog_ref: service://mhbench/pentest-agent/debian-bookworm
+  delivery: build
+  context: build/agent
+  dockerfile: Dockerfile
+- catalog_ref: service://east-quay/port-app/php82
+  delivery: build
+  context: build/port-app
+  dockerfile: Dockerfile
+  default_expose: [80]
+  healthcheck: [CMD-SHELL, 'curl -fsS http://127.0.0.1/index.php >/dev/null']
+- catalog_ref: service://east-quay/port-db/mariadb1011
+  delivery: build
+  context: build/port-db
+  dockerfile: Dockerfile
+  default_expose: [3306]
+  healthcheck: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+- catalog_ref: service://east-quay/yard-dispatch/python312
+  delivery: build
+  context: build/yard-dispatch
+  dockerfile: Dockerfile
+  default_expose: [8081]
+  healthcheck: [CMD-SHELL, "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/healthz', timeout=2)\""]
+- catalog_ref: service://east-quay/yard-control/python312
+  delivery: build
+  context: build/yard-control
+  dockerfile: Dockerfile
+  default_expose: [8082]
+  healthcheck: [CMD-SHELL, "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8082/healthz', timeout=2)\""]
+- catalog_ref: service://east-quay/yard-broker/nanomq0256
+  delivery: build
+  context: build/yard-broker
+  dockerfile: Dockerfile
+  default_expose: [1883]
+  healthcheck: [CMD-SHELL, "nc -z 127.0.0.1 1883"]

@@ -1,0 +1,76 @@
+schema_version: '1.0'
+id: east-quay-terminal
+title: East Quay Regional Cargo Operations
+summary: >-
+  East Quay processes carrier requests and vessel calls through a port operations
+  application. Terminal operations review clearance and dispatch decisions before
+  approved moves enter a segmented yard message and equipment-control path.
+departments:
+- id: carrier-services
+  name: Carrier Services
+  purpose: Receive vessel, cargo, and container requests from shipping customers.
+- id: terminal-operations
+  name: Terminal Operations
+  purpose: Review requests, clearance records, vessel assignments, and yard moves.
+- id: terminal-integration
+  name: Terminal Integration
+  purpose: Translate approved port work into equipment-facing dispatch messages.
+- id: automation-engineering
+  name: Automation and Equipment Engineering
+  purpose: Maintain the yard controller and its bounded operating rules.
+- id: ot-network-operations
+  name: OT Network Operations
+  purpose: Operate the isolated message path between dispatch and yard control.
+actors:
+- id: freight-agent
+  name: Freight Agent
+  department_id: carrier-services
+  description: External carrier user who can create requests and view its own shipment records.
+- id: cargo-clerk
+  name: Cargo Clerk
+  department_id: terminal-operations
+  description: Reviews submitted requests and supporting cargo records.
+- id: operations-supervisor
+  name: Port Operations Supervisor
+  department_id: terminal-operations
+  description: Records clearance decisions and authorizes dispatch work.
+- id: integration-engineer
+  name: Terminal Integration Engineer
+  department_id: terminal-integration
+  description: Maintains the port-to-yard dispatch bridge.
+- id: controls-engineer
+  name: Controls Engineer
+  department_id: automation-engineering
+  description: Maintains equipment command handling and safe operating limits.
+systems:
+- id: port-operations
+  name: Port Operations and Shipment Records
+  purpose: Maintain carrier requests, ship calls, container references, and clearance decisions.
+  department_ids: [carrier-services, terminal-operations]
+- id: yard-dispatch
+  name: Yard Dispatch Integration
+  purpose: Convert approved shipment moves into equipment-facing work orders.
+  department_ids: [terminal-integration, terminal-operations]
+- id: yard-message-network
+  name: Yard Message Network
+  purpose: Carry work orders and completion messages between dispatch and control.
+  department_ids: [ot-network-operations, terminal-integration]
+- id: yard-control
+  name: Yard Control Process
+  purpose: Apply permitted work orders to vessel and equipment state.
+  department_ids: [automation-engineering]
+workflows:
+- id: carrier-request-review
+  name: Carrier request and operations review
+  purpose: Record a carrier request, review its vessel and cargo details, and record clearance status.
+  actor_ids: [freight-agent, cargo-clerk, operations-supervisor]
+  system_ids: [port-operations]
+  records: [carrier-request, vessel-call, container-reference, clearance-decision]
+  outcome: The request and clearance decision are available to terminal operations.
+- id: approved-move-to-yard
+  name: Dispatch an approved shipment move
+  purpose: Convert an approved and cleared shipment into a yard action and reconcile completion.
+  actor_ids: [operations-supervisor, integration-engineer, controls-engineer]
+  system_ids: [port-operations, yard-dispatch, yard-message-network, yard-control]
+  records: [approved-yard-move, yard-command, equipment-completion]
+  outcome: Yard state reflects only moves authorized by the shipment clearance and dispatch status.
