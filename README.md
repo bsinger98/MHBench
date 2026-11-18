@@ -121,6 +121,8 @@ differential likewise has no proven Harbor route-to-resource bridge.
 Vulnerability selection remains explicit; rendering requires a matching
 reviewed weakness catalog whenever weaknesses are selected and fails rather
 than silently dropping them.
+The validator reports selection bands separately from triage states, so a
+rejected research lead is not confused with a deployable weakness candidate.
 
 The business-semantic validator also rejects duplicate department/actor/system/
 workflow IDs, repeated workflow associations, systems that appear in no

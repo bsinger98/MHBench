@@ -40,9 +40,16 @@ def main(scenario_file: Path, range_file: Path) -> None:
             for band in ("core", "adjacent", "alternate", "deferred")
             if bands[band]
         )
+        triage = Counter(item.triage_status for item in range_plan.weakness_candidates)
+        triage_summary = ", ".join(
+            f"{status}={triage[status]}"
+            for status in ("selected", "candidate", "rejected")
+            if triage[status]
+        )
         click.echo(
             f"{len(range_plan.weakness_candidates)} weakness candidates "
-            f"({band_summary}); none imply selection or deployment"
+            f"({band_summary}; triage: {triage_summary}); "
+            "none imply selection or deployment"
         )
         direct = range_plan.candidates_directly_reachable_from_entry()
         click.echo(

@@ -17,6 +17,7 @@ from src.scenario.compose_backend import (
     render_compose,
 )
 from src.scenario.render_harbor_task import main as render_harbor_task
+from src.scenario.validate import main as validate_scenario
 from src.scenario.spec import (
     RangePlan,
     ScenarioBundle,
@@ -72,6 +73,18 @@ class ScenarioSemanticValidationTest(unittest.TestCase):
             "business systems must participate in at least one workflow",
         ):
             self._east_quay_bundle(scenario)
+
+    def test_validator_reports_selection_band_separately_from_triage_state(self):
+        result = CliRunner().invoke(
+            validate_scenario,
+            [
+                str(SCENARIO_DIR / "scenario.yaml"),
+                str(SCENARIO_DIR / "range-plan.yaml"),
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertIn("core=1", result.output)
+        self.assertIn("triage: candidate=1, rejected=2", result.output)
 
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI is not installed")
