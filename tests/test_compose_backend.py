@@ -17,7 +17,7 @@ from src.scenario.compose_backend import (
     render_compose,
 )
 from src.scenario.render_harbor_task import main as render_harbor_task
-from src.scenario.spec import RangePlan, WeaknessInstance
+from src.scenario.spec import RangePlan, WeaknessCandidate, WeaknessInstance
 from pydantic import ValidationError
 
 
@@ -28,6 +28,63 @@ SMOKE_DIR = ROOT / "examples/compose-smoke"
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI is not installed")
 class ComposeBackendTest(unittest.TestCase):
+    def _cve_candidate(self):
+        families = [
+            "cve_org_record",
+            "nvd_record",
+            "vendor_advisory",
+            "github",
+            "gitlab",
+            "exploit_db",
+            "packet_storm",
+            "metasploit",
+            "nuclei",
+            "web_search",
+        ]
+        scopes = ["identifier", "product_version", "sink", "root_cause"]
+        return {
+            "id": "cve-screen-fixture",
+            "source_track": "cve_no_public_poc",
+            "source_ref": "test://CVE-2099-1234",
+            "product": "test product",
+            "vulnerable_baseline": "1.0",
+            "fix_commit": "fixed-control",
+            "cve_id": "CVE-2099-1234",
+            "mechanism": "test only",
+            "precondition": "test precondition",
+            "requires_capabilities": ["test:entry"],
+            "grants_capabilities": ["test:resource"],
+            "resource_effects": ["test:resource"],
+            "business_fit": "Schema fixture only.",
+            "selection_band": "core",
+            "selection_rationale": "Schema fixture only.",
+            "public_poc_screen": "pass",
+            "poc_searches": [
+                {
+                    "source_family": family,
+                    "query_scope": scopes[index % len(scopes)],
+                    "checked_on": "2026-11-18",
+                    "query": f"CVE-2099-1234 test-product version 1.0 query {index}",
+                    "url": f"https://example.invalid/search/{index}",
+                    "classification": "not_found",
+                    "notes": "Test fixture; not research evidence.",
+                }
+                for index, family in enumerate(families)
+            ],
+        }
+
+    def test_cve_candidate_requires_multisource_poc_search_evidence(self):
+        raw = self._cve_candidate()
+        raw["poc_searches"] = raw["poc_searches"][:-1]
+        with self.assertRaisesRegex(ValidationError, "missing source families"):
+            WeaknessCandidate.model_validate(raw)
+
+    def test_cve_candidate_cannot_pass_with_exact_public_reproducer(self):
+        raw = self._cve_candidate()
+        raw["poc_searches"][0]["classification"] = "exact"
+        with self.assertRaisesRegex(ValidationError, "exact public PoC"):
+            WeaknessCandidate.model_validate(raw)
+
     def _two_hop_plan(self):
         raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
         raw["weakness_candidates"] = []
@@ -46,10 +103,11 @@ class ComposeBackendTest(unittest.TestCase):
             raw["weakness_candidates"].append(
                 {
                     "id": candidate_id,
+                    "source_track": "deployed_weakness",
                     "source_ref": f"test://candidate-{index}",
                     "product": "smoke fixture",
                     "vulnerable_baseline": "1.0",
-                    "fix_commit": f"fix-{index}",
+                    "corrected_control_ref": f"control://fixed-{index}",
                     "mechanism": f"verified mechanism {index}",
                     "precondition": required,
                     "requires_capabilities": [required],
@@ -59,8 +117,8 @@ class ComposeBackendTest(unittest.TestCase):
                     "selection_band": "core",
                     "selection_rationale": "Test fixture.",
                     "triage_status": "selected",
-                    "artifact_pair_status": "registry-pair",
-                    "public_poc_screen": "pass",
+                    "artifact_pair_status": "deployment-control-pair",
+                    "public_poc_screen": "not_applicable",
                     "live_reproduction": "pass",
                 }
             )

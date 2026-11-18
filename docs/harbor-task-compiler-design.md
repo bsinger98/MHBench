@@ -25,7 +25,13 @@ weakness catalog entries. The East Quay range plan carries a
 candidates are research leads, while weakness instances are selected,
 deployable entries. Deploying one requires a selected candidate, a passed
 public-PoC screen, live vulnerable/fixed reproduction, and a verified artifact
-pair. Approved candidate paths must list explicitly deployed candidates in
+pair. Candidates identify their source track: CVE with no public PoC, silent
+upstream fix, or deployed weakness. A CVE candidate cannot pass the PoC gate
+without dated per-source query records covering CVE.org, NVD, vendor advisory,
+GitHub, GitLab, Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web
+search, plus identifier, product/version, sink, and root-cause query scopes.
+Any exact public reproducer makes a passing CVE screen invalid. Approved
+candidate paths must list explicitly deployed candidates in
 capability-contiguous order and name a target capability declared by the
 linked resource goal. These checks stop an unreviewed or disconnected path
 from being represented as approved; they do not discover the path or deploy

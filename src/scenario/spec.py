@@ -7,6 +7,7 @@ models capture business semantics and portable service-level deployment intent.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -68,14 +69,44 @@ class WeaknessInstance(SpecModel):
     rationale: str
 
 
+class PocSearchRecord(SpecModel):
+    """Auditable per-source record for a public-reproducer screen."""
+
+    source_family: Literal[
+        "cve_org_record",
+        "nvd_record",
+        "vendor_advisory",
+        "github",
+        "gitlab",
+        "exploit_db",
+        "packet_storm",
+        "metasploit",
+        "nuclei",
+        "web_search",
+    ]
+    query_scope: Literal[
+        "identifier", "product_version", "sink", "root_cause", "references"
+    ]
+    checked_on: date
+    query: str = Field(min_length=1)
+    url: str = Field(min_length=1)
+    classification: Literal["exact", "related", "not_found", "unavailable"]
+    notes: str = Field(min_length=1)
+
+
 class WeaknessCandidate(SpecModel):
     """A sourced vulnerability candidate, not yet selected/deployed."""
 
     id: str
+    source_track: Literal[
+        "cve_no_public_poc", "silent_upstream_fix", "deployed_weakness"
+    ]
     source_ref: str
     product: str
     vulnerable_baseline: str
-    fix_commit: str
+    fix_commit: str | None = None
+    corrected_control_ref: str | None = None
+    cve_id: str | None = None
     mechanism: str
     precondition: str
     requires_capabilities: list[str] = Field(min_length=1)
@@ -87,11 +118,129 @@ class WeaknessCandidate(SpecModel):
     selection_rationale: str
     triage_status: Literal["candidate", "selected", "rejected"] = "candidate"
     artifact_pair_status: Literal[
-        "unchecked", "registry-pair", "source-build-required", "unavailable"
+        "unchecked",
+        "registry-pair",
+        "source-build-required",
+        "deployment-control-pair",
+        "unavailable",
     ] = "unchecked"
-    public_poc_screen: Literal["pending", "pass", "fail"] = "pending"
+    public_poc_screen: Literal[
+        "pending", "pass", "fail", "not_applicable"
+    ] = "pending"
+    poc_searches: list["PocSearchRecord"] = Field(default_factory=list)
     live_reproduction: Literal["pending", "pass", "fail"] = "pending"
     notes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_provenance_and_poc_screen(self) -> "WeaknessCandidate":
+        required_cve_sources = {
+            "cve_org_record",
+            "nvd_record",
+            "vendor_advisory",
+            "github",
+            "gitlab",
+            "exploit_db",
+            "packet_storm",
+            "metasploit",
+            "nuclei",
+            "web_search",
+        }
+        if self.source_track == "cve_no_public_poc":
+            if not self.fix_commit:
+                raise ValueError(
+                    f"CVE candidate {self.id} must identify its fixed control"
+                )
+            if not self.cve_id or not self.cve_id.startswith("CVE-"):
+                raise ValueError(
+                    f"CVE candidate {self.id} must declare its CVE identifier"
+                )
+            if self.public_poc_screen == "not_applicable":
+                raise ValueError(
+                    f"CVE candidate {self.id} cannot mark PoC screening "
+                    "not applicable"
+                )
+            if self.public_poc_screen == "pass":
+                searched = {record.source_family for record in self.poc_searches}
+                missing = sorted(required_cve_sources - searched)
+                if missing:
+                    raise ValueError(
+                        f"CVE candidate {self.id} cannot pass PoC screening; "
+                        f"missing source families: {missing}"
+                    )
+                if any(
+                    record.classification == "exact"
+                    for record in self.poc_searches
+                ):
+                    raise ValueError(
+                        f"CVE candidate {self.id} has an exact public PoC and "
+                        "cannot pass screening"
+                    )
+                query_scopes = {record.query_scope for record in self.poc_searches}
+                required_scopes = {
+                    "identifier",
+                    "product_version",
+                    "sink",
+                    "root_cause",
+                }
+                missing_scopes = sorted(required_scopes - query_scopes)
+                if missing_scopes:
+                    raise ValueError(
+                        f"CVE candidate {self.id} cannot pass PoC screening; "
+                        f"missing query scopes: {missing_scopes}"
+                    )
+        elif self.cve_id:
+            raise ValueError(
+                f"non-CVE candidate {self.id} must not declare a cve_id"
+            )
+
+        if self.source_track == "deployed_weakness":
+            if self.public_poc_screen != "not_applicable":
+                raise ValueError(
+                    f"deployed weakness {self.id} must mark public PoC screen "
+                    "not_applicable"
+                )
+            if not self.corrected_control_ref:
+                raise ValueError(
+                    f"deployed weakness {self.id} must identify its corrected "
+                    "deployment control"
+                )
+            if self.fix_commit:
+                raise ValueError(
+                    f"deployed weakness {self.id} must not use fix_commit as a "
+                    "substitute for its corrected deployment control"
+                )
+        elif self.public_poc_screen == "not_applicable":
+            raise ValueError(
+                f"{self.source_track} candidate {self.id} requires a public "
+                "PoC screening state"
+            )
+        elif not self.fix_commit:
+            raise ValueError(
+                f"{self.source_track} candidate {self.id} must identify its "
+                "fixed upstream commit"
+            )
+        elif (
+            self.source_track == "silent_upstream_fix"
+            and self.public_poc_screen == "pass"
+            and not self.poc_searches
+        ):
+            raise ValueError(
+                f"silent-fix candidate {self.id} cannot pass the public "
+                "reproducer screen without per-source search records"
+            )
+        if (
+            self.source_track != "deployed_weakness"
+            and self.public_poc_screen == "pass"
+            and any(
+                record.classification == "exact"
+                for record in self.poc_searches
+            )
+        ):
+            raise ValueError(
+                f"candidate {self.id} has an exact public reproducer and "
+                "cannot pass screening"
+            )
+        return self
 
 
 class ArtifactObservation(SpecModel):
@@ -262,7 +411,10 @@ class RangePlan(SpecModel):
                     f"{candidate.id} whose triage_status is "
                     f"{candidate.triage_status!r}, not 'selected'"
                 )
-            if candidate.public_poc_screen != "pass":
+            if (
+                candidate.source_track != "deployed_weakness"
+                and candidate.public_poc_screen != "pass"
+            ):
                 raise ValueError(
                     f"selected candidate {candidate.id} has not passed "
                     "the public PoC screen"
@@ -272,13 +424,15 @@ class RangePlan(SpecModel):
                     f"selected candidate {candidate.id} has not passed "
                     "live vulnerable/fixed reproduction"
                 )
-            if candidate.artifact_pair_status not in (
-                "registry-pair",
-                "source-build-required",
-            ):
+            valid_artifact_pairs = (
+                {"deployment-control-pair"}
+                if candidate.source_track == "deployed_weakness"
+                else {"registry-pair", "source-build-required"}
+            )
+            if candidate.artifact_pair_status not in valid_artifact_pairs:
                 raise ValueError(
                     f"selected candidate {candidate.id} has no verified "
-                    "vulnerable/fixed artifact pair"
+                    "vulnerable/fixed or deployment-control artifact pair"
                 )
         for network in self.networks:
             if not network.purpose.strip():

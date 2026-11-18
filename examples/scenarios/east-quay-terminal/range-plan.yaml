@@ -90,6 +90,7 @@ services:
   ports: [1883]
 weakness_candidates:
 - id: nanomq-407-topic-alias-http-acl-bypass
+  source_track: silent_upstream_fix
   source_ref: pentest_design/CANDIDATES.md row 407
   product: NanoMQ (emqx/nanomq)
   vulnerable_baseline: 0.25.6
@@ -117,6 +118,18 @@ weakness_candidates:
   triage_status: rejected
   artifact_pair_status: registry-pair
   public_poc_screen: fail
+  poc_searches:
+  - source_family: github
+    query_scope: root_cause
+    checked_on: '2026-11-18'
+    query: NanoMQ #407 topic alias HTTP ACL regression test
+    url: https://github.com/nanomq/nanomq/commit/77529d8c782d2f06758cae0c0832f4201f3b7026
+    classification: exact
+    notes: >-
+      The upstream regression test reproduces the alias/HTTP-ACL behavior;
+      the source audit also shows the behavior is rejection, not unauthorized
+      delivery, so the candidate is rejected on both impact and public
+      reproducer grounds.
   live_reproduction: pending
   notes:
   - No exploit implementation is selected; this candidate is rejected.

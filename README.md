@@ -85,8 +85,12 @@ in `src/scenario/spec.py`:
    `weakness_candidates` (sourced leads not
    yet selected or deployed) separately from `weaknesses` (selected instances
    that must resolve to deployable templates and explicitly name their
-   `candidate_id`. The compiler does not randomly choose from the candidate
-   pool; selection is an explicit, reviewed input.
+   `candidate_id`). Candidate tracks distinguish CVE/no-public-PoC, silent
+   upstream fix, and deployed weakness. CVE candidates need dated, per-source
+   search evidence across CVE.org, NVD, vendor advisory, GitHub, GitLab,
+   Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web search; an
+   exact public reproducer blocks selection. The compiler does not randomly
+   choose from the candidate pool; selection is an explicit, reviewed input.
 
 An illustrative pair is in `examples/scenarios/east-quay-terminal/`. Validate
 both together with:
