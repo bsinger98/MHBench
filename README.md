@@ -108,17 +108,19 @@ catalog entries. The East Quay YAML remains independent of the existing
 OpenStack `--type` JSON deployment path. Its current service catalog resolves
 to a Harbor-compatible Compose
 environment; its research pool currently has a **rejected** NanoMQ lead, a
-**deferred** Headscale remote-access lead, and a preliminary Open WES
-enabled-plugin revision lead. Open WES has a strong warehouse fit and passed
-a local vulnerable/fixed Compose differential, but it is not yet in the East
-Quay service graph and has no demonstrated cargo-resource effect or K3
-protocol-cost gate. Its separate CVE-2026-111721 stock-scope issue was
-rejected after finding a public detailed reproducer and a low-cost REST/ID
-path. There is no approved candidate path and there are still zero
-selected/deployed weaknesses. The Headscale component differential likewise
-has no proven Harbor route-to-resource bridge. Vulnerability selection remains
-explicit; rendering requires a matching reviewed weakness catalog whenever
-weaknesses are selected and fails rather than silently dropping them.
+**deferred** Headscale remote-access lead, and a **rejected** Open WES
+enabled-plugin revision lead. Open WES has a strong warehouse fit and passed a
+local vulnerable/fixed Compose behavior differential, but source review showed
+the actual vulnerable baseline had no pluginDeveloper/pluginAdmin
+authorization split, so the change was not a demonstrated security-boundary
+bypass. Its separate CVE-2026-111721 stock-scope issue was also rejected after
+finding a public detailed reproducer and a low-cost REST/ID path. Open WES is
+not in the East Quay service graph. There is no approved candidate path and
+there are still zero selected/deployed weaknesses. The Headscale component
+differential likewise has no proven Harbor route-to-resource bridge.
+Vulnerability selection remains explicit; rendering requires a matching
+reviewed weakness catalog whenever weaknesses are selected and fails rather
+than silently dropping them.
 
 The business-semantic validator also rejects duplicate department/actor/system/
 workflow IDs, repeated workflow associations, systems that appear in no

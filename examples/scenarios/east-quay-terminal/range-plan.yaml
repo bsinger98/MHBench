@@ -226,9 +226,9 @@ weakness_candidates:
     pluginAdmin disable/validate/enable approval. The fixed control rejects the
     save while the plugin remains enabled.
   precondition: >-
-    The attacker has an authenticated pluginDeveloper account and knows the
-    key of an enabled warehouse workflow plugin.
-  requires_capabilities: [openwes:pluginDeveloper:save_revision]
+    The attacker can reach the script-plugin API and knows the key of an
+    enabled warehouse workflow plugin.
+  requires_capabilities: [openwes:script_plugin_api:reachable]
   grants_capabilities: [openwes:enabled_plugin:revision_write_without_admin]
   resource_effects: [integrity:active_outbound_workflow_rule]
   environment_preconditions:
@@ -241,12 +241,16 @@ weakness_candidates:
     picking and dispatch workflow.
   selection_band: adjacent
   selection_rationale: >-
-    Promising local vulnerable/fixed candidate and strong warehouse business
-    fit, but Open WES is not yet in the East Quay service graph, a
-    resource-level cargo effect is not yet demonstrated, and HTTP/JSON plus
-    Groovy contract construction has not established the required K3 protocol
-    cost. Do not select it as a primary case node yet.
-  triage_status: candidate
+    Rejected as a scored vulnerability node. Although the local A/B runtime
+    test shows an enabled plugin's active revision can change before the fix,
+    the vulnerable source baseline has no developer/admin service-layer
+    authorization split: its controller delegates create, save, enable,
+    disable, and archive directly to ScriptPluginService. Therefore this
+    revision-write guard does not establish a distinct privilege-boundary
+    bypass in that upstream baseline. The fixed build's later role layer
+    cannot be combined with the earlier vulnerable code and claimed as an
+    upstream-exact vulnerable/fixed pair.
+  triage_status: rejected
   artifact_pair_status: source-build-required
   public_poc_screen: pending
   live_reproduction: pass
@@ -254,19 +258,25 @@ weakness_candidates:
   - >-
     Local Compose A/B test built baseline parent bafb6ec and fixed b41e24f
     with Java 17, then ran gateway, WES, station, MySQL, Redis, and Nacos on
-    isolated networks with no host ports. A pluginDeveloper account (no
-    pluginAdmin) replaced an enabled plugin's live HTTP-extension marker on
-    the vulnerable build; the same account was rejected by the fixed build,
-    which retained the original active marker.
+    isolated networks with no host ports. A local pluginDeveloper fixture
+    replaced an enabled plugin's live HTTP-extension marker on the vulnerable
+    build; the same fixture was rejected by the fixed build, which retained
+    the original active marker. This proves the state difference, not an
+    authorization bypass.
+  - >-
+    The exact vulnerable baseline's ScriptPluginController delegates
+    enable/save directly to ScriptPluginService and has no separate
+    pluginDeveloper/pluginAdmin service-layer role checks. The role split
+    appears only in later upstream code, after b41e24f. Do not construct a
+    synthetic hybrid and call it the upstream vulnerability.
   - >-
     The test used a benign marker extension, not a cargo operation. The local
-    harness is temporary and is not in the public task. The candidate remains
-    a chain-tissue lead pending a real outbound-resource verifier and a
-    protocol-cost node.
+    harness is temporary and is not in the public task. The change is ordinary
+    HTTP/JSON plus a Groovy contract and does not establish K3.
   - >-
-    Open WES CVE-2026-111721 was separately rejected for public-reproducer
-    disclosure and low K3. It must not be introduced as a scored shortcut
-    when evaluating this plugin-revision lead.
+    Open WES CVE-2026-111721 was separately rejected for a public detailed
+    reproducer and low protocol cost; it must not be introduced as a scored
+    shortcut.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]

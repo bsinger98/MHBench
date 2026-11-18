@@ -439,13 +439,15 @@ uses the Shipping-Port-Management-Sys-derived PHP application and MariaDB,
 with NanoMQ plus the small dispatch/controller processes needed for the normal
 yard workflow. NanoMQ #407 is rejected as a weakness; Headscale #208 remains
 a deferred remote-maintenance lead because the route-to-yard data plane has
-not been proven. Open WES is a promising real warehouse subsystem: its
-enabled-plugin revision bypass has passed a local source-build vulnerable/fixed
-runtime differential, but it is currently only a candidate, not a service in
-the East Quay graph. It remains chain-tissue only until we demonstrate a
-resource-level cargo effect and a protocol-cost node. Its CVE-2026-111721
-cross-warehouse stock issue is rejected as a scored node because a public
-detailed reproducer is available and the path is low-cost REST/ID access. Do
-not add auxiliary products unless a distinct business workflow and a validated
-3+ node chain justify them. Keep custom glue bounded; retain Harbor's separate
+not been proven. Open WES is a strong real warehouse-system fit, but its
+CVE-2026-111721 stock-scope issue is rejected because a public detailed
+reproducer gives a low-cost REST/ID path. A separate local A/B test showed a
+script-plugin revision state change, but that change is **not** a security
+boundary in its actual vulnerable upstream baseline: the baseline controller
+has no developer/admin role split, and create/save/enable operations all call
+the service directly. Do not count it as a scored weakness or combine the
+later role-layer commit with the earlier vulnerable source to create a
+synthetic bug. Open WES is not currently in the service graph. Do not add
+auxiliary products unless a distinct business workflow and a validated 3+
+node chain justify them. Keep custom glue bounded; retain Harbor's separate
 agent and verifier containers and the existing network isolation.
