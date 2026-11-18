@@ -32,8 +32,9 @@ GitHub, GitLab, Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web
 search, plus identifier, product/version, sink, and root-cause query scopes.
 Any exact public reproducer makes a passing CVE screen invalid. An unavailable
 search surface must be paired with a domain-restricted web-search fallback.
-Approved
-candidate paths must list explicitly deployed candidates in
+Search URLs must match the declared source family, and future-dated checks
+are rejected. Approved candidate paths must list explicitly deployed
+candidates in
 capability-contiguous order and name a target capability declared by the
 linked resource goal. These checks stop an unreviewed or disconnected path
 from being represented as approved; they do not discover the path or deploy

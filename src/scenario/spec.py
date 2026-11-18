@@ -9,8 +9,16 @@ from __future__ import annotations
 
 from datetime import date
 from typing import Literal
+from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class SpecModel(BaseModel):
@@ -102,9 +110,39 @@ class PocSearchRecord(SpecModel):
     ]
     checked_on: date
     query: str = Field(min_length=1)
-    url: str = Field(min_length=1)
+    url: AnyHttpUrl
     classification: Literal["exact", "related", "not_found", "unavailable"]
     notes: str = Field(min_length=1)
+
+    @field_validator("checked_on")
+    @classmethod
+    def reject_future_search_date(cls, value: date) -> date:
+        if value > date.today():
+            raise ValueError("PoC search checked_on date cannot be in the future")
+        return value
+
+    @model_validator(mode="after")
+    def source_url_matches_family(self) -> "PocSearchRecord":
+        expected_domains = {
+            "cve_org_record": "cve.org",
+            "nvd_record": "nvd.nist.gov",
+            "github": "github.com",
+            "gitlab": "gitlab.com",
+            "exploit_db": "exploit-db.com",
+            "packet_storm": "packetstormsecurity.com",
+            "metasploit": "github.com",
+            "nuclei": "github.com",
+        }
+        expected = expected_domains.get(self.source_family)
+        hostname = (urlsplit(str(self.url)).hostname or "").lower()
+        if expected and not (
+            hostname == expected or hostname.endswith(f".{expected}")
+        ):
+            raise ValueError(
+                f"{self.source_family} search URL must be hosted on "
+                f"{expected}, got {hostname or '<missing host>'}"
+            )
+        return self
 
 
 class WeaknessCandidate(SpecModel):

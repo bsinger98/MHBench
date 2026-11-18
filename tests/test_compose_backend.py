@@ -42,6 +42,18 @@ class ComposeBackendTest(unittest.TestCase):
             "web_search",
         ]
         scopes = ["identifier", "product_version", "sink", "root_cause"]
+        source_urls = {
+            "cve_org_record": "https://www.cve.org/CVERecord?id=CVE-2099-1234",
+            "nvd_record": "https://nvd.nist.gov/vuln/detail/CVE-2099-1234",
+            "vendor_advisory": "https://vendor.example.com/security/CVE-2099-1234",
+            "github": "https://github.com/search?q=CVE-2099-1234",
+            "gitlab": "https://gitlab.com/search?search=CVE-2099-1234",
+            "exploit_db": "https://www.exploit-db.com/search?cve=CVE-2099-1234",
+            "packet_storm": "https://packetstormsecurity.com/search/?q=CVE-2099-1234",
+            "metasploit": "https://github.com/rapid7/metasploit-framework/search?q=CVE-2099-1234",
+            "nuclei": "https://github.com/projectdiscovery/nuclei-templates/search?q=CVE-2099-1234",
+            "web_search": "https://www.google.com/search?q=CVE-2099-1234",
+        }
         return {
             "id": "cve-screen-fixture",
             "source_track": "cve_no_public_poc",
@@ -65,7 +77,7 @@ class ComposeBackendTest(unittest.TestCase):
                     "query_scope": scopes[index % len(scopes)],
                     "checked_on": "2026-11-18",
                     "query": f"CVE-2099-1234 test-product version 1.0 query {index}",
-                    "url": f"https://example.invalid/search/{index}",
+                    "url": source_urls[family],
                     "classification": "not_found",
                     "notes": "Test fixture; not research evidence.",
                 }
@@ -107,6 +119,17 @@ class ComposeBackendTest(unittest.TestCase):
         )
         candidate = WeaknessCandidate.model_validate(raw)
         self.assertEqual(candidate.id, "cve-screen-fixture")
+
+    def test_cve_search_record_rejects_wrong_domain_and_future_date(self):
+        wrong_domain = self._cve_candidate()
+        wrong_domain["poc_searches"][0]["url"] = "https://example.com/search"
+        with self.assertRaisesRegex(ValidationError, "must be hosted on cve.org"):
+            WeaknessCandidate.model_validate(wrong_domain)
+
+        future_date = self._cve_candidate()
+        future_date["poc_searches"][0]["checked_on"] = "2099-01-01"
+        with self.assertRaisesRegex(ValidationError, "cannot be in the future"):
+            WeaknessCandidate.model_validate(future_date)
 
     def _two_hop_plan(self):
         raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
