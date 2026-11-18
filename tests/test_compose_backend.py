@@ -85,6 +85,29 @@ class ComposeBackendTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "exact public PoC"):
             WeaknessCandidate.model_validate(raw)
 
+    def test_cve_candidate_requires_fallback_for_unavailable_search_surface(self):
+        raw = self._cve_candidate()
+        gitlab_record = next(
+            record
+            for record in raw["poc_searches"]
+            if record["source_family"] == "gitlab"
+        )
+        gitlab_record["classification"] = "unavailable"
+        with self.assertRaisesRegex(ValidationError, "domain-restricted web-search"):
+            WeaknessCandidate.model_validate(raw)
+
+        web_record = next(
+            record
+            for record in raw["poc_searches"]
+            if record["source_family"] == "web_search"
+        )
+        web_record["fallback_for"] = ["gitlab"]
+        web_record["query"] = (
+            "site:gitlab.com CVE-2099-1234 test-product version 1.0"
+        )
+        candidate = WeaknessCandidate.model_validate(raw)
+        self.assertEqual(candidate.id, "cve-screen-fixture")
+
     def _two_hop_plan(self):
         raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
         raw["weakness_candidates"] = []

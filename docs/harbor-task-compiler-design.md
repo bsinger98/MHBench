@@ -30,7 +30,9 @@ upstream fix, or deployed weakness. A CVE candidate cannot pass the PoC gate
 without dated per-source query records covering CVE.org, NVD, vendor advisory,
 GitHub, GitLab, Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web
 search, plus identifier, product/version, sink, and root-cause query scopes.
-Any exact public reproducer makes a passing CVE screen invalid. Approved
+Any exact public reproducer makes a passing CVE screen invalid. An unavailable
+search surface must be paired with a domain-restricted web-search fallback.
+Approved
 candidate paths must list explicitly deployed candidates in
 capability-contiguous order and name a target capability declared by the
 linked resource goal. These checks stop an unreviewed or disconnected path

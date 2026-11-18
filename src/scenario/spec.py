@@ -84,6 +84,19 @@ class PocSearchRecord(SpecModel):
         "nuclei",
         "web_search",
     ]
+    fallback_for: list[
+        Literal[
+            "cve_org_record",
+            "nvd_record",
+            "vendor_advisory",
+            "github",
+            "gitlab",
+            "exploit_db",
+            "packet_storm",
+            "metasploit",
+            "nuclei",
+        ]
+    ] = Field(default_factory=list)
     query_scope: Literal[
         "identifier", "product_version", "sink", "root_cause", "references"
     ]
@@ -188,6 +201,32 @@ class WeaknessCandidate(SpecModel):
                         f"CVE candidate {self.id} cannot pass PoC screening; "
                         f"missing query scopes: {missing_scopes}"
                     )
+                unavailable = {
+                    record.source_family
+                    for record in self.poc_searches
+                    if record.classification == "unavailable"
+                }
+                fallbacks = {
+                    source
+                    for record in self.poc_searches
+                    if record.source_family == "web_search"
+                    for source in record.fallback_for
+                }
+                if not unavailable <= fallbacks:
+                    raise ValueError(
+                        f"CVE candidate {self.id} marks sources unavailable "
+                        "without a corresponding domain-restricted web-search "
+                        f"fallback: {sorted(unavailable - fallbacks)}"
+                    )
+                for record in self.poc_searches:
+                    if record.fallback_for and (
+                        record.source_family != "web_search"
+                        or "site:" not in record.query.lower()
+                    ):
+                        raise ValueError(
+                            f"CVE candidate {self.id} fallback searches must "
+                            "be domain-restricted web_search queries"
+                        )
         elif self.cve_id:
             raise ValueError(
                 f"non-CVE candidate {self.id} must not declare a cve_id"

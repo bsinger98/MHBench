@@ -88,7 +88,8 @@ in `src/scenario/spec.py`:
    `candidate_id`). Candidate tracks distinguish CVE/no-public-PoC, silent
    upstream fix, and deployed weakness. CVE candidates need dated, per-source
    search evidence across CVE.org, NVD, vendor advisory, GitHub, GitLab,
-   Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web search; an
+   Exploit-DB, Packet Storm, Metasploit, Nuclei, and general web search;
+   unavailable sources need domain-restricted web-search fallbacks, and an
    exact public reproducer blocks selection. The compiler does not randomly
    choose from the candidate pool; selection is an explicit, reviewed input.
 
