@@ -175,23 +175,38 @@ weakness_candidates:
     merely to host a gRPC/Noise bug: the range still needs a natural maintenance
     access role, a legitimate way to discover the target NodeKey, a verified
     route from the returned map to the protected port resource, and a
-    vulnerable/fixed runtime pair.
+    vulnerable/fixed Docker/Harbor environment pair.
   triage_status: candidate
-  artifact_pair_status: unchecked
+  artifact_pair_status: source-build-required
   public_poc_screen: pending
-  live_reproduction: pending
+  live_reproduction: pass
   notes:
   - >-
     Preliminary protocol-depth lead only: TS2021/Noise plus the Headscale map
     request is materially more involved than a one-field HTTP enumeration.
   - >-
     Public PR #2642 explains the vulnerable identity binding at a high level;
-    K2 may therefore be weak. No claim of a completed multi-source public-PoC
-    screen or an exact wire-level reproducer is made.
+    K2 may therefore be weak. Public-PoC screening remains pending; the local
+    source-build test is not shipped with the task.
   - >-
     The observed effect is a peer network-map disclosure, not direct permission
     to connect to a peer or to load a shipment. The map-to-resource bridge is
     an unresolved gate, not an assumed attack step.
+artifact_observations:
+- checked_on: '2026-11-19'
+  candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
+  observation: >-
+    A local source-build differential used Headscale v0.26.0 and v0.26.1 with
+    a real TS2021/Noise client over loopback. Under an ACL that hid the yard
+    peer from the contractor's own map, v0.26.0 returned that protected peer
+    when the enrolled contractor's MachineKey requested the yard gateway's
+    NodeKey. The same mismatched-key request returned HTTP 404 on v0.26.1;
+    the gateway's own-key request still returned its normal map on both tags.
+  consequence: >-
+    The vulnerability's map-disclosure effect and fixed-version control are
+    reproduced at the protocol/server component boundary. This is not yet a
+    Harbor Compose build, and the map does not itself grant network access or
+    produce the cargo-loading goal.
 networks:
 - id: agent-edge
   purpose: Reachable from Harbor's main attacker container and the carrier-facing port application.
