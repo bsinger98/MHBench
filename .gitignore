@@ -178,3 +178,5 @@ cython_debug/
 !examples/compose-smoke/build/**
 !examples/scenarios/east-quay-terminal/build/
 !examples/scenarios/east-quay-terminal/build/**
+examples/scenarios/east-quay-terminal/build/**/__pycache__/
+examples/scenarios/east-quay-terminal/build/**/*.py[cod]
