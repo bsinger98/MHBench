@@ -107,10 +107,13 @@ approved ordered capability chain; it does not resolve or build weakness
 catalog entries. The East Quay YAML remains independent of the existing
 OpenStack `--type` JSON deployment path. Its current service catalog resolves
 to a Harbor-compatible Compose
-environment; it records one **rejected** NanoMQ lead, no approved candidate
-   path, and zero selected/deployed weaknesses. Vulnerability selection remains
-explicit; rendering requires a matching reviewed weakness catalog whenever
-weaknesses are selected and fails rather than silently dropping them.
+environment; its candidate pool currently has one **rejected** NanoMQ lead
+and one **deferred** Headscale remote-access lead, no approved candidate path,
+and zero selected/deployed weaknesses. The Headscale lead has a source-build
+component differential but no Harbor service, public-PoC clearance, or
+verified path to the cargo resource. Vulnerability selection remains explicit;
+rendering requires a matching reviewed weakness catalog whenever weaknesses
+are selected and fails rather than silently dropping them.
 
 Candidate review also records K1 (identify the served stack), K2 (identify and
 understand its defect), K3 (construct the required wire message), and the

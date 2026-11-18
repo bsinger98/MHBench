@@ -4,8 +4,10 @@
 renderer, Harbor task compiler, and East Quay integration fixture are
 implemented. A deployable weakness catalog/adapter is still missing, so
 East Quay has no selected weakness instances yet. A reviewed file-overlay
-adapter exists for build-backed services, but no East Quay weakness templates
-have passed the candidate research and live-reproduction gates.
+adapter exists for build-backed services, but no East Quay weakness template
+has passed all research, PoC, build-pair, and live-reproduction gates. The
+Headscale #208 lead has a source-build protocol differential but remains
+deferred without an approved Harbor service or cargo-resource bridge.
 
 The first executable part of this proposal is a two-stage, backend-neutral
 input contract in `src/scenario/spec.py`: the business scenario at
@@ -431,10 +433,12 @@ composition.
 
 ## Suggested first vertical slice
 
-Use the East Quay scenario only as the first integration test for the schema,
-not as proof that every planned service is selected. Start with the most
-implementation-supported cargo application candidate (Dolibarr + MariaDB),
-then add an optional real broker only if the validated weakness chain and
-normal shipment workflow need it. Keep any custom portal and yard-state process
-small and explicit. Do not add OpenStack, a full multi-VM layer, or an LLM call
-to the first compiler prototype.
+Use East Quay as the integration test for the schema and Harbor packaging, not
+as proof that every planned service is selected. The current runnable baseline
+uses the Shipping-Port-Management-Sys-derived PHP application and MariaDB,
+with NanoMQ plus the small dispatch/controller processes needed for the normal
+yard workflow. NanoMQ #407 is rejected as a weakness; Headscale #208 remains
+a deferred remote-maintenance lead. Do not add Dolibarr or another auxiliary
+product unless a distinct business workflow and a validated 3+ node chain
+justify it. Keep custom glue bounded; retain Harbor's separate agent and
+verifier containers and the existing network isolation.
