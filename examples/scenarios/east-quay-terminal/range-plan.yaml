@@ -202,6 +202,11 @@ artifact_observations:
     when the enrolled contractor's MachineKey requested the yard gateway's
     NodeKey. The same mismatched-key request returned HTTP 404 on v0.26.1;
     the gateway's own-key request still returned its normal map on both tags.
+    Source commits: v0.26.0 `2dc2f3b3f0e0efcb5257379dec7ad1b4b09f8945`,
+    v0.26.1 `474ea236d0c6d393dbcf7baa98da240ad20c1b66`. The local temporary
+    Go test harness SHA-256 was
+    `c7f958a2da3967928c16cc08a88b52efadb5295881fdcbe190bb384f551ffcdc`;
+    it is not included in the public task or candidate files.
   consequence: >-
     The vulnerability's map-disclosure effect and fixed-version control are
     reproduced at the protocol/server component boundary. This is not yet a
