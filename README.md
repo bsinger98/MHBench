@@ -178,9 +178,11 @@ cannot reach the database, dispatch bridge, or controller, has no public
 egress, and runs without added Linux capabilities. It also asserts private
 PID/IPC namespaces for the agent and each target container, confirms the
 agent cannot read the database's per-run target marker or the controller's
-verifier evidence file, and exercises carrier/staff login, the clearance
-hold, the dispatch bridge, NanoMQ HTTP authentication/ACL, and the controller's
-independently written MQTT event plus database state.
+verifier evidence file, and rejects both anonymous and carrier-session POSTs
+to the upstream app's legacy vessel-status mutator without changing the target
+state. It also exercises carrier/staff login, the clearance hold, the dispatch
+bridge, NanoMQ HTTP authentication/ACL, and the controller's independently
+written MQTT event plus database state.
 
 ### Harbor task compiler
 
