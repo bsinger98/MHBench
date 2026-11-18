@@ -205,6 +205,14 @@ weakness_candidates:
     a separate authorized maintenance peer only to observe the route in its
     updated map; it does not prove the gateway forwards packets to an East
     Quay service or that the attacker can load a shipment.
+  - >-
+    A separate temporary integration test with real Tailscale containers
+    confirmed only that the injected prefix appeared in the gateway's
+    AvailableRoutes. It remained absent from ApprovedRoutes, SubnetRoutes,
+    and the contractor peer's PrimaryRoutes; a broadened ACL and group,
+    direct-user, and wildcard auto-approver variants did not resolve this.
+    No yard HTTP access was demonstrated. Keep this candidate deferred until
+    a policy-realistic route approval and data-plane bridge are reproduced.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
