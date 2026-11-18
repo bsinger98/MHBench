@@ -213,6 +213,60 @@ weakness_candidates:
     direct-user, and wildcard auto-approver variants did not resolve this.
     No yard HTTP access was demonstrated. Keep this candidate deferred until
     a policy-realistic route approval and data-plane bridge are reproduced.
+- id: openwes-enabled-plugin-revision-write
+  source_track: silent_upstream_fix
+  source_ref: pentest_design/CANDIDATES.md row 442
+  product: Open WES (jingsewu/open-wes)
+  vulnerable_baseline: bafb6ecc18c98074e46408108f9ff2f4cadf42a5
+  fix_commit: b41e24f128d6aadb0ad24f0f153adb74b4c8fbf3
+  mechanism: >-
+    The script-plugin save-revision service rejected archived plugins but did
+    not reject ENABLED plugins. A pluginDeveloper could change the active
+    revision pointer and trigger runtime materialization without the separate
+    pluginAdmin disable/validate/enable approval. The fixed control rejects the
+    save while the plugin remains enabled.
+  precondition: >-
+    The attacker has an authenticated pluginDeveloper account and knows the
+    key of an enabled warehouse workflow plugin.
+  requires_capabilities: [openwes:pluginDeveloper:save_revision]
+  grants_capabilities: [openwes:enabled_plugin:revision_write_without_admin]
+  resource_effects: [integrity:active_outbound_workflow_rule]
+  environment_preconditions:
+  - An Open WES deployment with the script-plugin workbench and an enabled outbound workflow extension.
+  - The attacker has the pluginDeveloper role but not the pluginAdmin role.
+  - The enabled plugin's runtime effect is linked to a deterministic East Quay outbound resource.
+  business_fit: >-
+    Terminal integration engineers may maintain warehouse outbound allocation
+    rules; unauthorized live changes can alter how shipment work enters the
+    picking and dispatch workflow.
+  selection_band: adjacent
+  selection_rationale: >-
+    Promising local vulnerable/fixed candidate and strong warehouse business
+    fit, but Open WES is not yet in the East Quay service graph, a
+    resource-level cargo effect is not yet demonstrated, and HTTP/JSON plus
+    Groovy contract construction has not established the required K3 protocol
+    cost. Do not select it as a primary case node yet.
+  triage_status: candidate
+  artifact_pair_status: source-build-required
+  public_poc_screen: pending
+  live_reproduction: pass
+  notes:
+  - >-
+    Local Compose A/B test built baseline parent bafb6ec and fixed b41e24f
+    with Java 17, then ran gateway, WES, station, MySQL, Redis, and Nacos on
+    isolated networks with no host ports. A pluginDeveloper account (no
+    pluginAdmin) replaced an enabled plugin's live HTTP-extension marker on
+    the vulnerable build; the same account was rejected by the fixed build,
+    which retained the original active marker.
+  - >-
+    The test used a benign marker extension, not a cargo operation. The local
+    harness is temporary and is not in the public task. The candidate remains
+    a chain-tissue lead pending a real outbound-resource verifier and a
+    protocol-cost node.
+  - >-
+    Open WES CVE-2026-111721 was separately rejected for public-reproducer
+    disclosure and low K3. It must not be introduced as a scored shortcut
+    when evaluating this plugin-revision lead.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
@@ -240,6 +294,24 @@ artifact_observations:
     boundary. This is not yet a Harbor Compose build. The route is present in
     the attacker's control-plane map, but gateway packet forwarding and the
     cargo-loading goal are not proven.
+- checked_on: '2026-11-19'
+  candidate_ids: [openwes-enabled-plugin-revision-write]
+  observation: >-
+    Java 17 source builds succeeded for the Open WES vulnerable baseline
+    `bafb6ecc18c98074e46408108f9ff2f4cadf42a5` and fixed control
+    `b41e24f128d6aadb0ad24f0f153adb74b4c8fbf3`. An isolated Compose stack
+    (Gateway, WES, Station, MySQL, Redis, Nacos; no host ports) used the same
+    low-privilege pluginDeveloper role and a benign active HTTP extension on
+    both sides. On the baseline the developer's revision update was accepted
+    and the live endpoint marker changed; on the fixed control the save was
+    rejected and the old active marker remained. This proves active-revision
+    integrity effect, not a cargo/yard operation.
+  consequence: >-
+    Local vulnerable/fixed runtime differential passed with a non-admin
+    developer-role user. Open WES is not yet included in the East Quay Compose
+    graph; the workflow/resource effect and K3 protocol-cost requirement
+    remain unproven, so this is candidate evidence only and does not approve a
+    candidate path.
 networks:
 - id: agent-edge
   purpose: Reachable from Harbor's main attacker container and the carrier-facing port application.
