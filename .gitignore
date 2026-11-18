@@ -174,5 +174,7 @@ cython_debug/
 .pypirc
 
 # Scenario build contexts are source assets, not disposable package outputs.
+!examples/compose-smoke/build/
+!examples/compose-smoke/build/**
 !examples/scenarios/east-quay-terminal/build/
 !examples/scenarios/east-quay-terminal/build/**
