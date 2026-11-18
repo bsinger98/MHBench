@@ -142,6 +142,56 @@ weakness_candidates:
     nmq_auth_http_sub_pub() returns NOT_AUTHORIZED; source evidence contradicts
     the candidate ledger's claim that the broker delivers the restricted publish.
   - The public regression test is an available reproducer for the alias/ACL behavior, so it also fails the project's no-public-reproducer selection gate.
+- id: headscale-208-machine-key-node-key-map-confusion
+  source_track: silent_upstream_fix
+  source_ref: pentest_design/CANDIDATES.md row 208
+  product: Headscale (juanfont/headscale)
+  vulnerable_baseline: v0.26.0
+  fix_commit: bad783321e8ea0c77bd00933bfd5d18ec8e05bca
+  mechanism: >-
+    The TS2021 Noise `/machine/map` handler selected a node using the
+    request's public NodeKey but did not verify that the Noise session's
+    MachineKey belonged to that node. An enrolled peer could request a map
+    under another node's NodeKey and receive that node's network map.
+  precondition: >-
+    The attacker is an enrolled Headscale peer and knows another node's
+    public NodeKey.
+  requires_capabilities:
+  - headscale:tailnet:enrolled-peer
+  - headscale:public-node-key:known
+  grants_capabilities: [headscale:cross-node:map-read]
+  resource_effects: [confidentiality:peer-network-map]
+  environment_preconditions:
+  - A Headscale v0.26.0 control plane and at least two enrolled peers.
+  - The target NodeKey has a legitimate discovery source in the port workflow.
+  - The map disclosure must be shown to enable a path to an East Quay resource; this is not yet established.
+  business_fit: >-
+    A self-hosted maintenance-access control plane could plausibly support
+    terminal integration and automation engineers, but no remote-access system
+    is currently in the East Quay service graph.
+  selection_band: deferred
+  selection_rationale: >-
+    Deferred research lead from the sourced candidate pool. Do not add Headscale
+    merely to host a gRPC/Noise bug: the range still needs a natural maintenance
+    access role, a legitimate way to discover the target NodeKey, a verified
+    route from the returned map to the protected port resource, and a
+    vulnerable/fixed runtime pair.
+  triage_status: candidate
+  artifact_pair_status: unchecked
+  public_poc_screen: pending
+  live_reproduction: pending
+  notes:
+  - >-
+    Preliminary protocol-depth lead only: TS2021/Noise plus the Headscale map
+    request is materially more involved than a one-field HTTP enumeration.
+  - >-
+    Public PR #2642 explains the vulnerable identity binding at a high level;
+    K2 may therefore be weak. No claim of a completed multi-source public-PoC
+    screen or an exact wire-level reproducer is made.
+  - >-
+    The observed effect is a peer network-map disclosure, not direct permission
+    to connect to a peer or to load a shipment. The map-to-resource bridge is
+    an unresolved gate, not an assumed attack step.
 networks:
 - id: agent-edge
   purpose: Reachable from Harbor's main attacker container and the carrier-facing port application.
