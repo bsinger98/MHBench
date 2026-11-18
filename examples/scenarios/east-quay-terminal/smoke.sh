@@ -75,6 +75,16 @@ if docker compose -p "$PROJECT" --project-directory "$OUT" \
   exec -T main test -r /var/lib/mysql/.east-quay-target-id; then
   echo "agent unexpectedly read the database container's target marker" >&2; exit 1
 fi
+DIRECT_STATUS_CODE="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main curl -sS -o /dev/null -w '%{http_code}' \
+    -d "countryid=1&shipnumber=${TARGET_SHIP}&curr_status=PL" \
+    http://port-app/shipstatus.php | tr -d '\r')"
+test "$DIRECT_STATUS_CODE" = 403
+docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T port-db mariadb -ueastquay -plocal-only eastquay -N -e \
+  "SELECT IF(Curr_Status='AL','PASS','FAIL') FROM ships WHERE Number=${TARGET_SHIP} AND Id=1" | grep -qx PASS
 if docker compose -p "$PROJECT" --project-directory "$OUT" \
   -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
   exec -T main sh -c 'nc -zw2 port-db 3306 2>/dev/null'; then
@@ -116,6 +126,12 @@ CARRIER_CODE="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
   exec -T main curl -sS -b /tmp/eq-carrier.cookie -o /dev/null -w '%{http_code}' \
     http://port-app/adminHome.php | tr -d '\r')"
 test "$CARRIER_CODE" = 403
+CARRIER_STATUS_CODE="$(docker compose -p "$PROJECT" --project-directory "$OUT" \
+  -f "$BASE_COMPOSE" -f "$OUT/docker-compose.yaml" \
+  exec -T main curl -sS -b /tmp/eq-carrier.cookie -o /dev/null -w '%{http_code}' \
+    -d "countryid=1&shipnumber=${TARGET_SHIP}&curr_status=PL" \
+    http://port-app/shipstatus.php | tr -d '\r')"
+test "$CARRIER_STATUS_CODE" = 403
 
 # The clearance hold blocks dispatch. Operations records clearance, then the
 # real MQTT-backed worker updates the shipment state and durable event record.

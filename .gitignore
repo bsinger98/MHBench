@@ -172,3 +172,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Scenario build contexts are source assets, not disposable package outputs.
+!examples/scenarios/east-quay-terminal/build/
+!examples/scenarios/east-quay-terminal/build/**
