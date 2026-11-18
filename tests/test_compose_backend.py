@@ -131,21 +131,24 @@ class ComposeBackendTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "cannot be in the future"):
             WeaknessCandidate.model_validate(future_date)
 
-    def _two_hop_plan(self):
+    def _three_node_plan(self):
         raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
         raw["weakness_candidates"] = []
         raw["weaknesses"] = []
         raw["attack_transitions"] = []
         raw["candidate_paths"] = []
         raw["goals"][0]["target_capabilities"] = ["integrity:target-record"]
+        hops = (
+            ("http:get_status", "credential:internal-worker"),
+            ("credential:internal-worker", "session:maintenance-access"),
+            ("session:maintenance-access", "integrity:target-record"),
+        )
         for index, (required, granted) in enumerate(
-            (
-                ("http:get_status", "credential:internal-worker"),
-                ("credential:internal-worker", "integrity:target-record"),
-            ),
+            hops,
             start=1,
         ):
             candidate_id = f"candidate-{index}"
+            is_primary = index == 3
             raw["weakness_candidates"].append(
                 {
                     "id": candidate_id,
@@ -166,6 +169,39 @@ class ComposeBackendTest(unittest.TestCase):
                     "artifact_pair_status": "deployment-control-pair",
                     "public_poc_screen": "not_applicable",
                     "live_reproduction": "pass",
+                    "case_role": "primary" if is_primary else "chain_tissue",
+                    "knowledge_thresholds": {
+                        "k1": {
+                            "result": "not_crossed",
+                            "evidence": "The test fixture identifies the HTTP service.",
+                        },
+                        "k2": {
+                            "result": "not_crossed",
+                            "evidence": "No product-specific defect discovery is modeled in this fixture.",
+                        },
+                        "k3": {
+                            "result": "crossed" if is_primary else "not_crossed",
+                            "evidence": (
+                                "The final fixture hop requires constructing a protocol message."
+                                if is_primary
+                                else "The fixture hop uses a simple request."
+                            ),
+                        },
+                    },
+                    "enumeration": {
+                        "status": "acceptable",
+                        "surface": "Smoke fixture capability transition",
+                        "authentication_state": "test-only",
+                        "input_fields": ["test payload"],
+                        "minimum_search_space": 16 if is_primary else 1,
+                        "interaction_rounds": 3 if is_primary else 1,
+                        "protocol_construction_required": is_primary,
+                        "rationale": (
+                            "The final hop requires a structured wire message."
+                            if is_primary
+                            else "Included only as chain tissue in this schema fixture."
+                        ),
+                    },
                 }
             )
             raw["weaknesses"].append(
@@ -187,37 +223,67 @@ class ComposeBackendTest(unittest.TestCase):
             )
         raw["candidate_paths"] = [
             {
-                "id": "approved-two-hop",
-                "candidate_ids": ["candidate-1", "candidate-2"],
+                "id": "approved-three-node-chain",
+                "candidate_ids": ["candidate-1", "candidate-2", "candidate-3"],
                 "target_goal_id": "read-status",
                 "target_capability": "integrity:target-record",
-                "rationale": "A connected two-hop test chain.",
+                "primary_candidate_id": "candidate-3",
+                "rationale": "A connected three-node test chain.",
                 "status": "approved",
             }
         ]
         return raw
 
     def test_approved_candidate_path_validates_as_ordered_capability_chain(self):
-        plan = RangePlan.model_validate(self._two_hop_plan())
+        plan = RangePlan.model_validate(self._three_node_plan())
         self.assertEqual(plan.candidate_paths[0].status, "approved")
 
     def test_selected_weakness_rejects_unselected_candidate(self):
-        raw = self._two_hop_plan()
+        raw = self._three_node_plan()
         raw["weakness_candidates"][0]["triage_status"] = "candidate"
         with self.assertRaisesRegex(ValidationError, "triage_status"):
             RangePlan.model_validate(raw)
 
     def test_approved_candidate_path_rejects_disconnected_order(self):
-        raw = self._two_hop_plan()
+        raw = self._three_node_plan()
         raw["candidate_paths"][0]["candidate_ids"] = [
-            "candidate-2",
+            "candidate-3",
             "candidate-1",
+            "candidate-2",
         ]
         with self.assertRaisesRegex(ValidationError, "continuous chain"):
             RangePlan.model_validate(raw)
 
+    def test_approved_candidate_path_requires_three_or_more_nodes(self):
+        raw = self._three_node_plan()
+        raw["candidate_paths"][0]["candidate_ids"] = [
+            "candidate-1",
+            "candidate-2",
+        ]
+        raw["candidate_paths"][0]["primary_candidate_id"] = "candidate-2"
+        with self.assertRaisesRegex(ValidationError, "at least three vulnerability nodes"):
+            RangePlan.model_validate(raw)
+
+    def test_approved_candidate_path_requires_protocol_cost(self):
+        raw = self._three_node_plan()
+        raw["weakness_candidates"][2]["knowledge_thresholds"]["k3"] = {
+            "result": "not_crossed",
+            "evidence": "No protocol construction in this negative test.",
+        }
+        with self.assertRaisesRegex(
+            ValidationError, "must pass the enumeration screen"
+        ):
+            RangePlan.model_validate(raw)
+
+    def test_primary_candidate_cannot_pass_with_small_enumeration(self):
+        raw = self._three_node_plan()
+        raw["weakness_candidates"][2]["enumeration"]["status"] = "too_small"
+        raw["weakness_candidates"][2]["enumeration"]["minimum_search_space"] = 3
+        with self.assertRaisesRegex(ValidationError, "enumeration screen"):
+            RangePlan.model_validate(raw)
+
     def test_approved_candidate_path_must_reach_resource_goal_capability(self):
-        raw = self._two_hop_plan()
+        raw = self._three_node_plan()
         raw["candidate_paths"][0]["target_capability"] = "integrity:other-record"
         with self.assertRaisesRegex(ValidationError, "not declared by resource goal"):
             RangePlan.model_validate(raw)
@@ -263,7 +329,7 @@ class ComposeBackendTest(unittest.TestCase):
             SMOKE_DIR / "scenario.yaml",
             SMOKE_DIR / "range-plan.yaml",
         )
-        plan = RangePlan.model_validate(self._two_hop_plan())
+        plan = RangePlan.model_validate(self._three_node_plan())
         bundle = raw_bundle.model_copy(update={"range": plan})
         catalog = ServiceCatalog.model_validate(
             load_yaml(SMOKE_DIR / "service-catalog.yaml")
@@ -282,14 +348,14 @@ class ComposeBackendTest(unittest.TestCase):
                         )
                     ],
                 )
-                for index in (1, 2)
+                for index in (1, 2, 3)
             ],
         )
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "catalog"
             shutil.copytree(SMOKE_DIR / "build", root / "build")
             (root / "weakness-overlays").mkdir()
-            for index in (1, 2):
+            for index in (1, 2, 3):
                 (root / "weakness-overlays" / f"node-{index}.txt").write_text(
                     f"selected weakness overlay {index}\n"
                 )
@@ -327,7 +393,7 @@ class ComposeBackendTest(unittest.TestCase):
             self.assertIn("/usr/share/nginx/html/node-2.txt", dockerfile)
             self.assertEqual(
                 len(list((output / "build/status-page/_mhbench/weaknesses").glob("*/*"))),
-                2,
+                3,
             )
             subprocess.run(
                 [*compose_args, "build", "status-page"],
@@ -494,7 +560,7 @@ class ComposeBackendTest(unittest.TestCase):
             (root / "weakness-overlays").mkdir()
             (root / "weakness-overlays" / "proof.txt").write_text("overlay\n")
             range_file = Path(temp) / "range-plan.yaml"
-            range_file.write_text(yaml.safe_dump(self._two_hop_plan()))
+            range_file.write_text(yaml.safe_dump(self._three_node_plan()))
             weakness_catalog_file = Path(temp) / "weaknesses.yaml"
             weakness_catalog_file.write_text(
                 yaml.safe_dump(
@@ -512,7 +578,7 @@ class ComposeBackendTest(unittest.TestCase):
                                     }
                                 ],
                             }
-                            for index in (1, 2)
+            for index in (1, 2, 3)
                         ],
                     }
                 )

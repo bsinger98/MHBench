@@ -145,6 +145,66 @@ class PocSearchRecord(SpecModel):
         return self
 
 
+class KnowledgeThreshold(SpecModel):
+    """Evidence-backed assessment of one pre-build difficulty threshold."""
+
+    result: Literal["pending", "crossed", "not_crossed"] = "pending"
+    evidence: str | None = None
+
+    @model_validator(mode="after")
+    def require_basis_for_verdict(self) -> "KnowledgeThreshold":
+        if self.result != "pending" and not (self.evidence or "").strip():
+            raise ValueError(
+                "a non-pending knowledge-threshold verdict needs evidence"
+            )
+        return self
+
+
+class KnowledgeThresholds(SpecModel):
+    """K1: identify stack, K2: identify defect, K3: construct wire request."""
+
+    k1: KnowledgeThreshold = Field(default_factory=KnowledgeThreshold)
+    k2: KnowledgeThreshold = Field(default_factory=KnowledgeThreshold)
+    k3: KnowledgeThreshold = Field(default_factory=KnowledgeThreshold)
+
+    def crossed_count(self) -> int:
+        return sum(
+            threshold.result == "crossed"
+            for threshold in (self.k1, self.k2, self.k3)
+        )
+
+
+class EnumerationAssessment(SpecModel):
+    """Static estimate of the smallest search an attacker must perform."""
+
+    status: Literal["pending", "acceptable", "too_small"] = "pending"
+    surface: str | None = None
+    authentication_state: str | None = None
+    input_fields: list[str] = Field(default_factory=list)
+    minimum_search_space: int | None = Field(default=None, ge=1)
+    interaction_rounds: int | None = Field(default=None, ge=1)
+    protocol_construction_required: bool | None = None
+    rationale: str | None = None
+
+    @model_validator(mode="after")
+    def completed_assessment_has_dimensions(self) -> "EnumerationAssessment":
+        if self.status != "pending" and (
+            not self.surface
+            or not self.authentication_state
+            or not self.input_fields
+            or self.minimum_search_space is None
+            or self.interaction_rounds is None
+            or self.protocol_construction_required is None
+            or not (self.rationale or "").strip()
+        ):
+            raise ValueError(
+                "a completed enumeration assessment must document surface, "
+                "authentication, inputs, minimum search space, interaction "
+                "rounds, protocol construction, and rationale"
+            )
+        return self
+
+
 class WeaknessCandidate(SpecModel):
     """A sourced vulnerability candidate, not yet selected/deployed."""
 
@@ -179,6 +239,13 @@ class WeaknessCandidate(SpecModel):
         "pending", "pass", "fail", "not_applicable"
     ] = "pending"
     poc_searches: list["PocSearchRecord"] = Field(default_factory=list)
+    case_role: Literal["primary", "chain_tissue", "excluded"] = "primary"
+    knowledge_thresholds: KnowledgeThresholds = Field(
+        default_factory=KnowledgeThresholds
+    )
+    enumeration: EnumerationAssessment = Field(
+        default_factory=EnumerationAssessment
+    )
     live_reproduction: Literal["pending", "pass", "fail"] = "pending"
     notes: list[str] = Field(default_factory=list)
 
@@ -379,12 +446,13 @@ class AttackTransition(SpecModel):
 
 
 class CandidatePathHypothesis(SpecModel):
-    """Explicit, unapproved combination hypothesis over candidate IDs."""
+    """Explicit composition hypothesis over sourced candidate IDs."""
 
     id: str
     candidate_ids: list[str] = Field(min_length=2)
     target_goal_id: str
     target_capability: str | None = None
+    primary_candidate_id: str | None = None
     rationale: str
     unresolved_gates: list[str] = Field(default_factory=list)
     status: Literal["hypothesis", "rejected", "approved"] = "hypothesis"
@@ -395,6 +463,17 @@ class CandidatePathHypothesis(SpecModel):
             raise ValueError(
                 f"approved candidate path {self.id} must declare target_capability"
             )
+        if self.status == "approved":
+            if len(self.candidate_ids) < 3:
+                raise ValueError(
+                    f"approved candidate path {self.id} needs at least three "
+                    "vulnerability nodes"
+                )
+            if self.primary_candidate_id not in self.candidate_ids:
+                raise ValueError(
+                    f"approved candidate path {self.id} must identify its "
+                    "primary candidate within candidate_ids"
+                )
         return self
 
 
@@ -511,6 +590,25 @@ class RangePlan(SpecModel):
                     f"selected candidate {candidate.id} has no verified "
                     "vulnerable/fixed or deployment-control artifact pair"
                 )
+            if candidate.case_role == "excluded":
+                raise ValueError(
+                    f"selected weakness {weakness.id} references candidate "
+                    f"{candidate.id} marked excluded"
+                )
+            if candidate.enumeration.status == "pending":
+                raise ValueError(
+                    f"selected candidate {candidate.id} has no completed "
+                    "enumeration assessment"
+                )
+            if candidate.case_role == "primary" and (
+                candidate.enumeration.status != "acceptable"
+                or candidate.knowledge_thresholds.crossed_count() == 0
+            ):
+                raise ValueError(
+                    f"primary candidate {candidate.id} must pass the "
+                    "enumeration screen and cross at least one K1/K2/K3 "
+                    "knowledge threshold"
+                )
         for network in self.networks:
             if not network.purpose.strip():
                 raise ValueError(f"network {network.id} needs a purpose")
@@ -571,6 +669,27 @@ class RangePlan(SpecModel):
                     raise ValueError(
                         f"approved candidate path {path.id} contains candidates "
                         f"not explicitly deployed as weaknesses: {missing}"
+                    )
+                primary = candidates[path.primary_candidate_id]
+                assert isinstance(primary, WeaknessCandidate)
+                if (
+                    primary.case_role != "primary"
+                    or primary.enumeration.status != "acceptable"
+                    or primary.knowledge_thresholds.crossed_count() == 0
+                ):
+                    raise ValueError(
+                        f"approved candidate path {path.id} primary candidate "
+                        f"{primary.id} has not passed the K1/K2/K3 and "
+                        "enumeration screens"
+                    )
+                if not any(
+                    candidates[candidate_id].knowledge_thresholds.k3.result
+                    == "crossed"
+                    for candidate_id in path.candidate_ids
+                ):
+                    raise ValueError(
+                        f"approved candidate path {path.id} has no candidate "
+                        "with a demonstrated K3 protocol-construction cost"
                     )
                 reachable = set(self.entry_state.capabilities)
                 for candidate_id in path.candidate_ids:

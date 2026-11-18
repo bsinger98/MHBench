@@ -40,6 +40,15 @@ linked resource goal. These checks stop an unreviewed or disconnected path
 from being represented as approved; they do not discover the path or deploy
 its weaknesses.
 
+Each candidate also carries K1/K2/K3 assessments and a static enumeration
+estimate. K1 is stack identification, K2 is defect-specific knowledge, and K3
+is constructing the required protocol message. A selected primary candidate
+must have at least one evidenced threshold and pass the enumeration screen.
+An approved case hypothesis requires at least three selected nodes, an
+explicit primary candidate, and at least one K3-crossing node. Lower-cost
+nodes may be labeled chain tissue, but they cannot make an otherwise
+enumeration-shaped weakness count as the primary case.
+
 A first Compose adapter is available at `src/scenario/compose_backend.py`.
 It resolves service `catalog_ref`s against a reviewed service catalog,
 renders Compose and copies declared build contexts. The first weakness adapter
