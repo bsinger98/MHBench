@@ -3,7 +3,9 @@
 **Status:** implementation preview. The scenario/range schemas, Compose
 renderer, Harbor task compiler, and East Quay integration fixture are
 implemented. A deployable weakness catalog/adapter is still missing, so
-non-empty weakness plans are intentionally rejected during Compose rendering.
+East Quay has no selected weakness instances yet. A reviewed file-overlay
+adapter exists for build-backed services, but no East Quay weakness templates
+have passed the candidate research and live-reproduction gates.
 
 The first executable part of this proposal is a two-stage, backend-neutral
 input contract in `src/scenario/spec.py`: the business scenario at
@@ -31,13 +33,15 @@ its weaknesses.
 
 A first Compose adapter is available at `src/scenario/compose_backend.py`.
 It resolves service `catalog_ref`s against a reviewed service catalog,
-renders Compose and copies declared build contexts. Its smoke fixture lives in
-`examples/compose-smoke/`. It intentionally refuses any range plan containing
-weakness instances because deployment from a reviewed weakness catalog is not
-implemented yet; silently ignoring them could produce a misleading benchmark.
-The renderer plus Harbor task compiler has been exercised with Docker Compose
-and Harbor 0.25.0. This proves local integration only, not yet stock-Harbor
-portability across other Harbor versions.
+renders Compose and copies declared build contexts. The first weakness adapter
+supports explicit file overlays on build-backed services. Each selected
+weakness must resolve through a separate catalog entry whose candidate and
+service compatibility are checked; duplicate target paths and missing overlay
+files fail closed. This is an adapter primitive, not yet a populated library
+of validated East Quay vulnerabilities. The smoke fixture lives in
+`examples/compose-smoke/`. The renderer plus Harbor task compiler has been
+exercised with Docker Compose and Harbor 0.25.0. This proves local integration
+only, not yet stock-Harbor portability across other Harbor versions.
 
 ## Recommendation
 

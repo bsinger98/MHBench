@@ -9,6 +9,9 @@ from click.testing import CliRunner
 from src.scenario.compose_backend import (
     ServiceCatalog,
     ServiceTemplate,
+    WeaknessCatalog,
+    WeaknessTemplate,
+    FileOverlay,
     load_bundle,
     load_yaml,
     render_compose,
@@ -115,7 +118,7 @@ class ComposeBackendTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "not declared by resource goal"):
             RangePlan.model_validate(raw)
 
-    def test_refuses_to_silently_drop_unimplemented_weaknesses(self):
+    def test_selected_weakness_requires_reviewed_weakness_catalog(self):
         bundle = load_bundle(
             SCENARIO_DIR / "scenario.yaml",
             SCENARIO_DIR / "range-plan.yaml",
@@ -148,8 +151,106 @@ class ComposeBackendTest(unittest.TestCase):
             ],
         )
         with tempfile.TemporaryDirectory() as temp:
-            with self.assertRaisesRegex(ValueError, "weakness catalog deployment"):
+            with self.assertRaisesRegex(ValueError, "requires a reviewed weakness catalog"):
                 render_compose(bundle, catalog, Path(temp), Path(temp) / "out")
+
+    def test_selected_weaknesses_render_reviewed_file_overlays(self):
+        raw_bundle = load_bundle(
+            SMOKE_DIR / "scenario.yaml",
+            SMOKE_DIR / "range-plan.yaml",
+        )
+        plan = RangePlan.model_validate(self._two_hop_plan())
+        bundle = raw_bundle.model_copy(update={"range": plan})
+        catalog = ServiceCatalog.model_validate(
+            load_yaml(SMOKE_DIR / "service-catalog.yaml")
+        )
+        weakness_catalog = WeaknessCatalog(
+            schema_version="1.0",
+            weaknesses=[
+                WeaknessTemplate(
+                    catalog_ref=f"weakness://smoke/{index}",
+                    candidate_ids=[f"candidate-{index}"],
+                    service_catalog_ref="service://smoke/http",
+                    file_overlays=[
+                        FileOverlay(
+                            source=f"weakness-overlays/node-{index}.txt",
+                            target=f"/usr/share/nginx/html/node-{index}.txt",
+                        )
+                    ],
+                )
+                for index in (1, 2)
+            ],
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "catalog"
+            shutil.copytree(SMOKE_DIR / "build", root / "build")
+            (root / "weakness-overlays").mkdir()
+            for index in (1, 2):
+                (root / "weakness-overlays" / f"node-{index}.txt").write_text(
+                    f"selected weakness overlay {index}\n"
+                )
+            output = Path(temp) / "rendered" / "environment"
+            compose_file = render_compose(
+                bundle,
+                catalog,
+                catalog_root=root,
+                output_dir=output,
+                weakness_catalog=weakness_catalog,
+            )
+            service = yaml.safe_load(compose_file.read_text())["services"][
+                "status-page"
+            ]
+            project_name = f"mhbench-overlay-{Path(temp).name}"
+            compose_args = [
+                "docker",
+                "compose",
+                "--project-name",
+                project_name,
+                "--project-directory",
+                str(output),
+                "-f",
+                str(SMOKE_DIR / "harness-compose.yaml"),
+                "-f",
+                str(compose_file),
+            ]
+            self.assertEqual(
+                service["build"]["dockerfile"], "Dockerfile.mhbench"
+            )
+            dockerfile = (
+                output / "build/status-page/Dockerfile.mhbench"
+            ).read_text()
+            self.assertIn("/usr/share/nginx/html/node-1.txt", dockerfile)
+            self.assertIn("/usr/share/nginx/html/node-2.txt", dockerfile)
+            self.assertEqual(
+                len(list((output / "build/status-page/_mhbench/weaknesses").glob("*/*"))),
+                2,
+            )
+            subprocess.run(
+                [*compose_args, "build", "status-page"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    *compose_args,
+                    "run",
+                    "--rm",
+                    "--no-deps",
+                    "status-page",
+                    "sh",
+                    "-c",
+                    (
+                        "test \"$(cat /usr/share/nginx/html/node-1.txt)\" "
+                        "= 'selected weakness overlay 1' && "
+                        "test \"$(cat /usr/share/nginx/html/node-2.txt)\" "
+                        "= 'selected weakness overlay 2'"
+                    ),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
 
     def test_selected_weakness_must_reference_a_listed_candidate(self):
         raw = load_yaml(SMOKE_DIR / "range-plan.yaml")
@@ -281,6 +382,70 @@ class ComposeBackendTest(unittest.TestCase):
             self.assertIn("agent@northshore.example", instruction)
             self.assertNotIn("loaded", instruction.lower())
             self.assertNotIn("clearance", instruction.lower())
+
+    def test_harbor_task_compiler_deploys_explicit_weakness_catalog(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "catalog"
+            shutil.copytree(SMOKE_DIR / "build", root / "build")
+            (root / "weakness-overlays").mkdir()
+            (root / "weakness-overlays" / "proof.txt").write_text("overlay\n")
+            range_file = Path(temp) / "range-plan.yaml"
+            range_file.write_text(yaml.safe_dump(self._two_hop_plan()))
+            weakness_catalog_file = Path(temp) / "weaknesses.yaml"
+            weakness_catalog_file.write_text(
+                yaml.safe_dump(
+                    {
+                        "schema_version": "1.0",
+                        "weaknesses": [
+                            {
+                                "catalog_ref": f"weakness://smoke/{index}",
+                                "candidate_ids": [f"candidate-{index}"],
+                                "service_catalog_ref": "service://smoke/http",
+                                "file_overlays": [
+                                    {
+                                        "source": "weakness-overlays/proof.txt",
+                                        "target": f"/usr/share/nginx/html/proof-{index}.txt",
+                                    }
+                                ],
+                            }
+                            for index in (1, 2)
+                        ],
+                    }
+                )
+            )
+            assets = Path(temp) / "assets"
+            assets.mkdir()
+            (assets / "task.toml").write_text('[task]\nname="smoke"\n')
+            (assets / "README.md").write_text("# Smoke task\n")
+            output = Path(temp) / "task"
+            result = CliRunner().invoke(
+                render_harbor_task,
+                [
+                    "--scenario",
+                    str(SMOKE_DIR / "scenario.yaml"),
+                    "--range-plan",
+                    str(range_file),
+                    "--catalog",
+                    str(SMOKE_DIR / "service-catalog.yaml"),
+                    "--catalog-root",
+                    str(root),
+                    "--weakness-catalog",
+                    str(weakness_catalog_file),
+                    "--task-assets",
+                    str(assets),
+                    "--output",
+                    str(output),
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, result.output)
+            generated_dockerfile = (
+                output / "environment/build/status-page/Dockerfile.mhbench"
+            )
+            self.assertTrue(generated_dockerfile.is_file())
+            self.assertIn(
+                "/usr/share/nginx/html/proof-1.txt",
+                generated_dockerfile.read_text(),
+            )
 
 
 if __name__ == "__main__":

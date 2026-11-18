@@ -97,12 +97,15 @@ uv run python -m src.scenario.validate \
   examples/scenarios/east-quay-terminal/range-plan.yaml
 ```
 
-At this stage, validation checks schema and references only. The East Quay
-YAML remains independent of the existing OpenStack `--type` JSON deployment
-path. Its current service catalog resolves to a Harbor-compatible Compose
+Validation checks schema, references, selection evidence gates, and any
+approved ordered capability chain; it does not resolve or build weakness
+catalog entries. The East Quay YAML remains independent of the existing
+OpenStack `--type` JSON deployment path. Its current service catalog resolves
+to a Harbor-compatible Compose
 environment; it records one **rejected** NanoMQ lead, no approved candidate
 path, and zero selected/deployed weaknesses. Vulnerability selection remains
-explicit; rendering refuses to silently drop selected weaknesses.
+explicit; rendering requires a matching reviewed weakness catalog whenever
+weaknesses are selected and fails rather than silently dropping them.
 
 ### Compose backend prototype
 
@@ -112,6 +115,9 @@ unprivileged `main` agent, and writes a `docker-compose.yaml` overlay with
 target services, networks, healthchecks, and copied build contexts. Harbor
 provides the base `main` service; the task overlay adds its task-local network
 attachments and security settings without replacing Harbor's built image.
+An explicit `--weakness-catalog` can add reviewed file overlays to build-backed
+services; it does not select candidates or support arbitrary deployment
+scripts.
 
 ```bash
 uv run python -m src.scenario.render_compose \

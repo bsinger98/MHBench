@@ -7,7 +7,13 @@ from pathlib import Path
 
 import click
 
-from .compose_backend import ServiceCatalog, load_bundle, load_yaml, render_compose
+from .compose_backend import (
+    ServiceCatalog,
+    WeaknessCatalog,
+    load_bundle,
+    load_yaml,
+    render_compose,
+)
 
 
 def _entry_instruction(bundle) -> str:
@@ -87,6 +93,12 @@ def _copy_task_assets(assets_dir: Path, output_dir: Path) -> None:
     type=click.Path(exists=True, file_okay=False, path_type=Path),
 )
 @click.option(
+    "--weakness-catalog",
+    "weakness_catalog_file",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Reviewed catalog required when the range plan selects weaknesses.",
+)
+@click.option(
     "--task-assets",
     required=True,
     type=click.Path(exists=True, file_okay=False, path_type=Path),
@@ -102,6 +114,7 @@ def main(
     range_file: Path,
     catalog_file: Path,
     catalog_root: Path,
+    weakness_catalog_file: Path | None,
     task_assets: Path,
     output_dir: Path,
 ) -> None:
@@ -109,6 +122,11 @@ def main(
     try:
         bundle = load_bundle(scenario_file, range_file)
         catalog = ServiceCatalog.model_validate(load_yaml(catalog_file))
+        weakness_catalog = (
+            WeaknessCatalog.model_validate(load_yaml(weakness_catalog_file))
+            if weakness_catalog_file
+            else None
+        )
         output_dir.mkdir(parents=True, exist_ok=True)
         environment_dir = output_dir / "environment"
         render_compose(
@@ -116,6 +134,7 @@ def main(
             catalog,
             catalog_root=catalog_root,
             output_dir=environment_dir,
+            weakness_catalog=weakness_catalog,
         )
         _copy_task_assets(task_assets, output_dir)
         (output_dir / "instruction.md").write_text(_entry_instruction(bundle))
