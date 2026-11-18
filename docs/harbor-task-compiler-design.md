@@ -451,3 +451,11 @@ synthetic bug. Open WES is not currently in the service graph. Do not add
 auxiliary products unless a distinct business workflow and a validated 3+
 node chain justify them. Keep custom glue bounded; retain Harbor's separate
 agent and verifier containers and the existing network isolation.
+
+Apache Doris #389 is a new unselected adjacent lead for a possible
+port-operations analytics warehouse. It offers a MySQL-protocol privilege
+boundary and a protected-column resource goal, but the service and its
+vulnerable/fixed image pair have not been run in the East Quay Compose
+topology. The published upstream regression test is recorded as a K2/
+memorization risk; do not treat this as an approved K3 node until the actual
+agent-tool cost and the analytics-to-yard business link are tested.

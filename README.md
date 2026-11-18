@@ -107,20 +107,21 @@ approved ordered capability chain; it does not resolve or build weakness
 catalog entries. The East Quay YAML remains independent of the existing
 OpenStack `--type` JSON deployment path. Its current service catalog resolves
 to a Harbor-compatible Compose
-environment; its research pool currently has a **rejected** NanoMQ lead, a
-**deferred** Headscale remote-access lead, and a **rejected** Open WES
-enabled-plugin revision lead. Open WES has a strong warehouse fit and passed a
-local vulnerable/fixed Compose behavior differential, but source review showed
-the actual vulnerable baseline had no pluginDeveloper/pluginAdmin
-authorization split, so the change was not a demonstrated security-boundary
-bypass. Its separate CVE-2026-111721 stock-scope issue was also rejected after
-finding a public detailed reproducer and a low-cost REST/ID path. Open WES is
-not in the East Quay service graph. There is no approved candidate path and
-there are still zero selected/deployed weaknesses. The Headscale component
-differential likewise has no proven Harbor route-to-resource bridge.
-Vulnerability selection remains explicit; rendering requires a matching
-reviewed weakness catalog whenever weaknesses are selected and fails rather
-than silently dropping them.
+environment; its research pool currently contains a **rejected** NanoMQ lead,
+a **deferred** Headscale remote-access lead, two **rejected** Open WES leads,
+and an unselected Apache Doris analytics lead. The Open WES active-plugin
+revision A/B test showed a state difference, but the vulnerable upstream
+baseline had no pluginDeveloper/pluginAdmin service-layer split, so that
+difference was not a demonstrated security-boundary bypass. Its separate
+CVE-2026-111721 stock-scope issue was rejected after finding a public detailed
+reproducer and low-cost REST/ID path. Apache Doris #389 may fit a port cargo
+analytics workflow and has a SQL protocol surface, but it is not yet in the
+service graph; image/runtime weight, K3 cost, and manifest-to-yard resource
+link remain unverified. There is no approved candidate path and still zero
+selected/deployed weaknesses. The Headscale differential has no proven
+Harbor route-to-resource bridge. Vulnerability selection remains explicit;
+rendering requires a matching reviewed weakness catalog whenever weaknesses
+are selected and fails rather than silently dropping them.
 The validator reports selection bands separately from triage states, so a
 rejected research lead is not confused with a deployable weakness candidate.
 

@@ -277,6 +277,78 @@ weakness_candidates:
     Open WES CVE-2026-111721 was separately rejected for a public detailed
     reproducer and low protocol cost; it must not be introduced as a scored
     shortcut.
+- id: doris-389-grantor-column-privilege
+  source_track: silent_upstream_fix
+  source_ref: pentest_design/CANDIDATES.md row 389
+  product: Apache Doris (apache/doris)
+  vulnerable_baseline: >-
+    Official FE/BE image tags 4.1.4.1; local runtime reported FE/BE
+    4.1.4.1-rc02, so the release artifact identity remains unverified.
+  fix_commit: 66d1bf5de4480b2d04f4e1775574bbd9a53de05e
+  mechanism: >-
+    In the grantor privilege check, column-level privileges were not included
+    in the predicate that verifies the grantor's authority over the target
+    column. On one table, a grantor with GRANT_PRIV but no SELECT access could
+    issue a column-level SELECT grant for a protected cargo-analytics column;
+    a second account could then read it. A cross-table variant is not assumed:
+    a local attempt to grant from a decoy table to a separate target table
+    failed on the tested baseline.
+  precondition: >-
+    The attacker can authenticate as a low-privilege Doris grantor with
+    GRANT_PRIV on the manifest table but no SELECT permission on its protected
+    column, and can use the MySQL-protocol query port.
+  requires_capabilities: [doris:mysql_protocol:authenticated_ops]
+  grants_capabilities: [doris:read:protected_manifest_column]
+  resource_effects: [confidentiality:protected_manifest_field]
+  environment_preconditions:
+  - A real Apache Doris FE/BE service pair on the vulnerable 4.1.4.1 line.
+  - A grantor account with GRANT_PRIV on the manifest table but no SELECT on the protected column.
+  - A second audit account with no initial access to the protected column.
+  - A cargo/throughput analytics workflow that naturally carries the protected manifest field.
+  business_fit: >-
+    A port operations analytics warehouse is a plausible system for querying
+    cargo, consignee, clearance, and throughput records. This candidate could
+    provide a protocol-heavy data-access milestone if the warehouse data is
+    naturally tied to the terminal's normal reporting workflow.
+  selection_band: adjacent
+  selection_rationale: >-
+    Promising multi-account SQL-protocol candidate from the existing sourced
+    pool, but Apache Doris is not in the East Quay service graph. A same-table
+    local test reproduced the grant/read effect on the image tagged 4.1.4.1;
+    FE and BE reported 4.1.4.1-rc02, so this is not yet a release-matched
+    vulnerable/fixed artifact pair. Upstream PR #68555 has a regression test
+    with a reproduction-shaped SQL setup; record its K2/memorization risk.
+    Keep unselected until stable release identity, agent-tool protocol cost,
+    image/runtime budget, and a natural manifest-to-yard chain are validated.
+  triage_status: candidate
+  artifact_pair_status: unchecked
+  public_poc_screen: pending
+  live_reproduction: pending
+  knowledge_thresholds:
+    k1:
+      result: pending
+    k2:
+      result: pending
+    k3:
+      result: pending
+  enumeration:
+    status: pending
+  notes:
+  - >-
+    The upstream regression test is public and contains a direct same-table
+    grant/read setup. It is recorded as a K2/memorization risk; do not copy it
+    into the task or treat absence of a standalone exploit script as proof of
+    no public reproducer. Re-evaluate under the project's Route B policy.
+  - >-
+    Local image A/B: 4.1.4.1-rc02 FE/BE accepted the same-table
+    `GRANT_PRIV`-then-column-SELECT operation and the audit account read the
+    test row; 4.1.5-release FE/BE denied it. A decoy-table-to-separate-table
+    attempt failed on the baseline. Do not score the RC test until a
+    release-matched vulnerable binary and fixed control are built and checked.
+  - >-
+    The two FE/BE images are large and default FE heap settings are
+    server-sized. Image digests are recorded in the local research log; task
+    memory and startup budgets still need a portable Harbor trial.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
@@ -322,6 +394,24 @@ artifact_observations:
     graph; the workflow/resource effect and K3 protocol-cost requirement
     remain unproven, so this is candidate evidence only and does not approve a
     candidate path.
+- checked_on: '2026-11-19'
+  candidate_ids: [doris-389-grantor-column-privilege]
+  observation: >-
+    A local internal Compose FE/BE pair used official image tags
+    `fe-4.1.4.1`/`be-4.1.4.1`; the running servers reported
+    `doris-4.1.4.1-rc02`. On a same-table test, `ops` had GRANT_PRIV on a
+    cargo-analytics table but no SELECT access; the vulnerable image accepted
+    a column-level SELECT grant to `audit`, and `audit` could read the seeded
+    test value. The same SQL grant was denied on `fe-4.1.5`/`be-4.1.5`
+    (`doris-4.1.5-release`). A cross-table variant (GRANT_PRIV on a decoy
+    table, grant on a separate target table) was denied on the tested
+    baseline.
+  consequence: >-
+    This verifies the same-table authorization defect on a release-candidate
+    image and its denial on 4.1.5, but not yet the release-matched vulnerable
+    `4.1.4.1` artifact described by the candidate record. No agent-side MySQL
+    protocol trial, Harbor deployment, or East Quay workflow link has been
+    performed; keep the candidate unselected.
 networks:
 - id: agent-edge
   purpose: Reachable from Harbor's main attacker container and the carrier-facing port application.
