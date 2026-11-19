@@ -364,6 +364,70 @@ weakness_candidates:
     The two FE/BE images are large and default FE heap settings are
     server-sized. Image digests are recorded in the local research log; task
     memory and startup budgets still need a portable Harbor trial.
+- id: dagu-304-remote-node-proxy-authz
+  source_track: silent_upstream_fix
+  source_ref: pentest_design/CANDIDATES.md row 304
+  product: Dagu (dagucloud/dagu)
+  vulnerable_baseline: v2.26.0
+  fix_commit: d7d2c7975cd4049b3cf4b769809af60b42502011
+  mechanism: >-
+    A request carrying ?remoteNode=<name> is proxied with that remote node's
+    stored credential before the local operation handler checks the caller's
+    role. At v2.26.0 a signed-in low-privilege user could therefore invoke
+    remote DAG operations beyond their local permissions. v2.27.0 adds
+    operation-based authorization before proxying.
+  precondition: >-
+    The attacker can authenticate as a read-only local Dagu user, and a Dagu
+    manager has a configured remote node with stored credentials.
+  requires_capabilities: [dagu:authenticated:read_only_user]
+  grants_capabilities: [dagu:remote_node:run_as_configured_identity]
+  resource_effects: [execution:remote_integration_node]
+  environment_preconditions:
+  - A Dagu v2.26.0 manager with a configured, authenticated remote node.
+  - A remote node whose normal business role includes yard-integration workflows.
+  - A low-privilege Dagu account without local DAG write or run permission.
+  business_fit: >-
+    Dagu could replace the custom yard-dispatch worker as a workflow
+    orchestrator, but no East Quay DAG or remote-node relationship has been
+    validated. Do not add it alongside the current worker just to host a
+    vulnerability.
+  selection_band: alternate
+  selection_rationale: >-
+    The containment gap is resolved: upstream fix d7d2c797 is in v2.27.0.
+    The candidate remains unselected pending exact public-reproducer review,
+    vulnerable/fixed runtime validation, and proof that Dagu can replace the
+    current dispatch integration without adding a redundant service. The
+    upstream PR describes the proxy authorization gap, and the attack is
+    ordinary HTTP/JSON; treat it as possible chain tissue, not the K3 primary.
+  triage_status: candidate
+  artifact_pair_status: registry-pair
+  public_poc_screen: pending
+  case_role: chain_tissue
+  knowledge_thresholds:
+    k1:
+      result: pending
+    k2:
+      result: pending
+    k3:
+      result: pending
+  enumeration:
+    status: pending
+  live_reproduction: pending
+  notes:
+  - >-
+    Release comparison v2.26.0...v2.27.0 includes fix commit
+    d7d2c7975cd4049b3cf4b769809af60b42502011. Static source review found the
+    vulnerable middleware in v2.26.0 and the remoteNodeAuthorization guard
+    before proxying in v2.27.0. This is a containment check, not a runtime
+    differential.
+  - >-
+    Merged PR #3695 also changes webhook dagRunId validation, a separate
+    public CVE-adjacent path. Do not use that webhook path as evidence or as
+    part of this candidate.
+  - >-
+    The current East Quay service graph does not contain Dagu. Any future
+    adoption must replace—not accompany—the custom yard-dispatch worker and
+    must be justified by the ordinary dispatch workflow.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
