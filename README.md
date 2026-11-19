@@ -109,12 +109,13 @@ OpenStack `--type` JSON deployment path. Its current service catalog resolves
 to a Harbor-compatible Compose
 environment; its research pool currently contains a **rejected** NanoMQ lead,
 a **deferred** Headscale remote-access lead, two **rejected** Open WES leads,
-an unselected Apache Doris analytics lead, and a deferred Dagu remote-node
-authorization lead. Dagu's vulnerable/fixed release pair is now available
-(`v2.26.0`/`v2.27.0`), but creating the required read-only user on the official
-OSS image returned a Dagu Pro license error. No Dagu remote-node task has been
-run; it remains outside the service graph unless a supported identity path is
-found, and could only replace—not accompany—the custom dispatch worker.
+an unselected Apache Doris analytics lead, and a **rejected** Dagu
+remote-node authorization lead. Dagu's vulnerable/fixed release pair is now
+available (`v2.26.0`/`v2.27.0`), but the API-layer reproduction harness is
+public in PR #100, so it fails our public-reproducer gate. The official OSS
+image also requires Dagu Pro to create the needed read-only user. Dagu remains
+outside the service graph; it must not be scored or added merely to reach a
+node count.
 The Open WES active-plugin
 revision A/B test showed a state difference, but the vulnerable upstream
 baseline had no pluginDeveloper/pluginAdmin service-layer split, so that
