@@ -109,13 +109,16 @@ OpenStack `--type` JSON deployment path. Its current service catalog resolves
 to a Harbor-compatible Compose
 environment; its research pool currently contains a **rejected** NanoMQ lead,
 a **deferred** Headscale remote-access lead, two **rejected** Open WES leads,
-an unselected Apache Doris analytics lead, and a **rejected** Dagu
-remote-node authorization lead. Dagu's vulnerable/fixed release pair is now
-available (`v2.26.0`/`v2.27.0`), but the API-layer reproduction harness is
-public in PR #100, so it fails our public-reproducer gate. The official OSS
-image also requires Dagu Pro to create the needed read-only user. Dagu remains
-outside the service graph; it must not be scored or added merely to reach a
-node count.
+an unselected Apache Doris analytics lead, a **rejected** Dagu remote-node
+authorization lead, and a **rejected** NetXMS command-injection lead. Dagu's
+vulnerable/fixed release pair is now available (`v2.26.0`/`v2.27.0`), but the
+API-layer reproduction harness is public in PR #100, so it fails our
+public-reproducer gate. The official OSS image also requires Dagu Pro to
+create the needed read-only user. Dagu remains outside the service graph; it
+must not be scored or added merely to reach a node count. NetXMS #321 has a
+local 5.2.7/5.2.8 image differential, but the NetXMS 5.2 patch release 8
+announcement discloses the same command-injection class, and no East Quay
+route to a NetXMS Agent is established.
 The Open WES active-plugin
 revision A/B test showed a state difference, but the vulnerable upstream
 baseline had no pluginDeveloper/pluginAdmin service-layer split, so that

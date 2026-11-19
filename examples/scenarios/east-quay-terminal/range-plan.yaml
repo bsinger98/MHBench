@@ -448,6 +448,77 @@ weakness_candidates:
     The current East Quay service graph does not contain Dagu. Any future
     adoption must replace—not accompany—the custom yard-dispatch worker and
     must be justified by the ordinary dispatch workflow.
+- id: netxms-321-physicaldisk-smartctl-command-injection
+  source_track: silent_upstream_fix
+  source_ref: pentest_design/CANDIDATES.md row 321
+  product: NetXMS Agent (netxms/netxms)
+  vulnerable_baseline: release-5.2.7
+  fix_commit: ca4f2e949690f82700280cb0a42afc79eb85fe4a
+  corrected_control_ref: >-
+    release-5.2.8; official backport contains ValidateDeviceName. Mainline
+    commit first appears in release-6.0.0.
+  mechanism: >-
+    The agent parameter handler copies an attacker-controlled device argument
+    into a smartctl shell command. Special shell syntax in the metric argument
+    triggers command execution as the NetXMS agent process. The fixed
+    ValidateDeviceName guard rejects such characters.
+  precondition: >-
+    The attacker can create an NXCP session from a source IP allowed by the
+    agent's MasterServers setting, or can define an agent-origin DCI using a
+    low-privilege NetXMS console identity with OBJECT_ACCESS_MODIFY on the node.
+  requires_capabilities: [netxms:nxcp:agent_session]
+  grants_capabilities: [netxms:agent:command_execution]
+  resource_effects: [execution:monitored_host]
+  environment_preconditions:
+  - A NetXMS Agent 5.2.7 instance with the PhysicalDisk metric handler.
+  - A network path and NetXMS MasterServers authorization for the client, or a
+    valid DCI configuration path.
+  - A command-side effect that can be independently observed by the verifier.
+  business_fit: >-
+    NetXMS could be a genuine OT Network Operations monitoring system for
+    terminal hosts, but it is not currently in the East Quay service graph and
+    no route from the carrier entry to an agent has been established.
+  selection_band: alternate
+  selection_rationale: >-
+    Rejected as a scored silent-fix node. The official 5.2 patch release 8
+    announcement publicly names command injection in PhysicalDisk.* metrics,
+    so K2 is disclosed. A component A/B test reproduced the shell side effect
+    on the official 5.2.7 agent and did not reproduce it on fixed 5.2.8, but
+    used nxget and a deliberately broad MasterServers allowlist; it did not
+    test an East Quay path or the agent-side NXCP construction burden.
+  triage_status: rejected
+  artifact_pair_status: registry-pair
+  public_poc_screen: pending
+  case_role: excluded
+  knowledge_thresholds:
+    k1:
+      result: pending
+    k2:
+      result: not_crossed
+      evidence: >-
+        NetXMS 5.2 patch release 8 publicly names the PhysicalDisk command
+        injection class.
+    k3:
+      result: pending
+  enumeration:
+    status: pending
+  live_reproduction: pass
+  notes:
+  - >-
+    Local A/B evidence is recorded at
+    pentest_design/research/2026-11-19-netxms-321-live-screen.md. The
+    official agent images were tested with the same metric request. The
+    vulnerable service produced a marker; the fixed service did not; a benign
+    System.PlatformName query worked on both.
+  - >-
+    A first test with `$()` syntax did not work because NetXMS argument parsing
+    truncated the closing parenthesis. A shell-substitution alternative was
+    used for the local screen; do not copy an exploit string into the task.
+  - >-
+    The local test set MasterServers=0.0.0.0/0 on an isolated Docker network
+    and used nxget from the official NetXMS server image. That setup is only a
+    component fixture, not a proposed deployment or proof that the agent can
+    reach a monitored node from the East Quay entry.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
@@ -511,6 +582,22 @@ artifact_observations:
     `4.1.4.1` artifact described by the candidate record. No agent-side MySQL
     protocol trial, Harbor deployment, or East Quay workflow link has been
     performed; keep the candidate unselected.
+- checked_on: '2026-11-19'
+  candidate_ids: [netxms-321-physicaldisk-smartctl-command-injection]
+  observation: >-
+    Official NetXMS Agent 5.2.7 and 5.2.8 images were tested on an isolated
+    Docker network. A benign System.PlatformName request returned
+    Linux-x86_64 on both. A shell-substitution device argument caused the
+    vulnerable agent to create a marker while the metric request returned
+    500 because smartctl was absent; the fixed agent returned 500 without
+    creating the marker. The test used the official NetXMS nxget client,
+    not a hand-rolled NXCP client, and the agent allowlist was broadened only
+    for the isolated component test.
+  consequence: >-
+    The command-execution effect and corrected control were locally observed,
+    but the official NetXMS 5.2 patch release 8 announcement discloses the
+    same vulnerability class. No East Quay network route or K3 agent-side
+    protocol trial was established; reject for scored use.
 networks:
 - id: agent-edge
   purpose: Reachable from Harbor's main attacker container and the carrier-facing port application.

@@ -86,7 +86,8 @@ class ScenarioSemanticValidationTest(unittest.TestCase):
         self.assertIn("core=1", result.output)
         self.assertIn("adjacent=2", result.output)
         self.assertIn("deferred=2", result.output)
-        self.assertIn("triage: candidate=2, rejected=3", result.output)
+        self.assertIn("alternate=1", result.output)
+        self.assertIn("triage: candidate=2, rejected=4", result.output)
 
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI is not installed")
