@@ -391,14 +391,18 @@ weakness_candidates:
     orchestrator, but no East Quay DAG or remote-node relationship has been
     validated. Do not add it alongside the current worker just to host a
     vulnerability.
-  selection_band: alternate
+  selection_band: deferred
   selection_rationale: >-
-    The containment gap is resolved: upstream fix d7d2c797 is in v2.27.0.
-    The candidate remains unselected pending exact public-reproducer review,
-    vulnerable/fixed runtime validation, and proof that Dagu can replace the
-    current dispatch integration without adding a redundant service. The
-    upstream PR describes the proxy authorization gap, and the attack is
-    ordinary HTTP/JSON; treat it as possible chain tissue, not the K3 primary.
+    The containment gap is resolved: upstream fix d7d2c797 is in v2.27.0, and
+    an API-layer differential confirms that v2.26 forwards to a fake remote
+    endpoint as its stored identity while v2.27 denies the viewer. Defer
+    East Quay adoption: on the official OSS image the supported user-create
+    API returns 403 requiring a Dagu Pro license, so the read-only principal
+    needed by this candidate is not yet provisionable in the task. Do not
+    substitute unsupported DB edits. Even if identity provisioning is solved,
+    Dagu must replace—not accompany—the custom dispatch worker, receive a
+    full remote-node runtime test, and remains chain tissue rather than the
+    K3 primary.
   triage_status: candidate
   artifact_pair_status: registry-pair
   public_poc_screen: pending
@@ -436,6 +440,11 @@ weakness_candidates:
     The current East Quay service graph does not contain Dagu. Any future
     adoption must replace—not accompany—the custom yard-dispatch worker and
     must be justified by the ordinary dispatch workflow.
+  - >-
+    Official OSS image startup succeeded, but creating a least-privileged
+    viewer with POST /api/v1/users returned HTTP 403 "User management requires
+    a Dagu Pro license". The remote DAG was not run; license-compatible
+    identity provisioning is an unresolved deployment gate.
 artifact_observations:
 - checked_on: '2026-11-19'
   candidate_ids: [headscale-208-machine-key-node-key-map-confusion]
