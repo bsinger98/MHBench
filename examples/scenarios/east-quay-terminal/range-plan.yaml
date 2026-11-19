@@ -422,6 +422,13 @@ weakness_candidates:
     returned 403 without calling the endpoint. This verifies the proxy
     authorization boundary, not execution by a real remote Dagu node or DAG.
   - >-
+    A local Compose start of the v2.26.0/v2.27.0 images confirmed the real
+    binaries load the configured manager/remote-node layout. Creating the
+    required read-only account through `POST /api/v1/users` returned 403
+    (`User management requires a Dagu Pro license`), so no actual
+    remote-node request was made. Do not substitute an unsupported database
+    edit or a fixed/vulnerable hybrid for a supported identity setup.
+  - >-
     Merged PR #3695 also changes webhook dagRunId validation, a separate
     public CVE-adjacent path. Do not use that webhook path as evidence or as
     part of this candidate.

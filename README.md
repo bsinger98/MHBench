@@ -113,6 +113,8 @@ an unselected Apache Doris analytics lead, and an alternate Dagu remote-node
 authorization lead. Dagu's vulnerable/fixed release pair is now available
 (`v2.26.0`/`v2.27.0`), but it is not in the service graph; it may be considered
 only as a replacement for the custom dispatch worker, not as an extra service.
+The real binaries started locally, but supported read-only-user provisioning
+returned a Dagu Pro license error; no Dagu remote-node task has been run.
 The Open WES active-plugin
 revision A/B test showed a state difference, but the vulnerable upstream
 baseline had no pluginDeveloper/pluginAdmin service-layer split, so that
