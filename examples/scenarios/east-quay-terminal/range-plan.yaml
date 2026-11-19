@@ -415,11 +415,12 @@ weakness_candidates:
   live_reproduction: pending
   notes:
   - >-
-    Release comparison v2.26.0...v2.27.0 includes fix commit
-    d7d2c7975cd4049b3cf4b769809af60b42502011. Static source review found the
-    vulnerable middleware in v2.26.0 and the remoteNodeAuthorization guard
-    before proxying in v2.27.0. This is a containment check, not a runtime
-    differential.
+    A local API-layer A/B harness used the actual v2.26.0 and v2.27.0 API
+    packages with a viewer auth fixture and a fake remote HTTP endpoint.
+    `POST /api/v1/dags/yard-dispatch/start?remoteNode=edge` was forwarded to
+    the fake endpoint with `Bearer remote-service-token` on v2.26.0; v2.27.0
+    returned 403 without calling the endpoint. This verifies the proxy
+    authorization boundary, not execution by a real remote Dagu node or DAG.
   - >-
     Merged PR #3695 also changes webhook dagRunId validation, a separate
     public CVE-adjacent path. Do not use that webhook path as evidence or as
